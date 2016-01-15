@@ -1,0 +1,303 @@
+function dibujo_conf_geo(para,axe_conf_geo,axe_estrDWN,bouton)
+if nargin == 4
+   refrescar = get(bouton.rafraichiEveryTime,'value');
+else
+   refrescar = 2; 
+end
+if refrescar == 3 % refrescar sólo una vez
+    set(bouton.rafraichiEveryTime,'value',1);
+    refrescar = 2;
+end
+if refrescar == 2
+axes(axe_conf_geo); cla; hold on
+disp('refrescando imagen')
+drawnow limitrate
+%-----------------------%
+% parametros geometrico %
+%-----------------------%
+% reescritura de parametros de geometria simetrica
+para.cont(1,1).za	= 0;
+for m=1:para.nmed
+  para.cont(m,2).a	= para.cont(m,1).a ;
+  para.cont(m,2).xa	= para.cont(m,1).xa;
+  para.cont(m,2).za	= para.cont(m,1).za;
+  para.cont(m,1).th   = para.cont(m,1).th *pi/180;
+  para.cont(m,2).th	= para.cont(m,1).th;
+end
+
+%% receptores
+% if isfield(para,'cont1')
+%     xr      = para.rec.xr;
+%     zr      = para.rec.zr;
+% else
+para     = pos_rec(para);
+xr      = para.rec.xr;
+yr      = para.rec.yr;
+zr      = para.rec.zr;
+% end
+if nargin == 4
+    verRecepotores = get(bouton.verReceptores,'value');
+else
+    verRecepotores = true;
+end
+if verRecepotores
+if para.dim == 4
+  colFondo = 'k'; arrcol = ['k','b','r','g','y','m','c','w']; marcador = '.';
+  if nargin == 2; marcador = 'none'; end
+  for ip = 1:size(xr)
+    if para.rec.medio(ip) == 1
+      plot3(axe_conf_geo,xr(ip),yr(ip),zr(ip),...
+        ['.' colFondo],'MarkerSize',10,'Marker',marcador)
+    else
+    plot3(axe_conf_geo,xr(ip),yr(ip),zr(ip),...
+      ['.' arrcol(para.cont(para.rec.medio(ip),1).piece{1}.ColorIndex+1)],...
+      'MarkerSize',10,'Marker',marcador)
+    end
+    view(3)
+  end
+elseif para.dim == 3
+  plot3(axe_conf_geo,xr,yr,zr,'.b','MarkerSize',10);view(3)
+else
+  plot(axe_conf_geo,xr,zr,'.b'); view(2)
+end
+end
+hold on
+
+%% contornos
+if nargin == 3; EA = 0.2; else EA = 0.5;end
+for m=2:para.nmed
+  if para.dim == 4 % 3Dgeneral
+    view(3)
+    verGeometria = true;
+    if nargin == 4; verGeometria = get(bouton.verGeometria,'value'); end
+    if verGeometria
+    for p = 1:para.cont(m,1).NumPieces % para cada pieza del contorno
+      if (size(para.cont(m,1).piece{p}.fileName,2)>1) % se cargó algo válido
+        if size(para.cont(m,1).piece{p}.geoFileData,2)>0 % y hay datos
+          % de archivo STL
+          thisGF = para.cont(m,1).piece{p}.geoFileData;
+          if nargin == 4;
+          if ~get(bouton.verNormales,'value'); thisGF = rmfield(thisGF,'N'); end
+          else
+              thisGF = rmfield(thisGF,'N'); 
+          end
+          plotSTL(axe_conf_geo,thisGF,...
+                               para.cont(m,1).piece{p}.ColorIndex,EA);
+          if get(bouton.verNormales,'value'); clear thisGF; end
+        end
+      end
+    end
+    end
+  elseif para.dim == 3 % 3Daxisim
+    % axisimétrico
+    if (para.geo(m) ~= 5) % todo menos STL
+      %monte
+      [xm,zm] = visu_courbe(para.geo(m),para.cont(m,1),1000);
+      plot3(axe_conf_geo,xm,xm.*0,zm,'k');
+      
+      %valle
+      [xv,zv] = visu_courbe(para.geo(m),para.cont(m,2),1000);
+      plot3(axe_conf_geo,xv,xv.*0,zv,'k');
+    end
+  else % 2D ou 2.5D
+    if (para.geo(m) ~= 5) % todo menos STL
+      %monte
+      [xm,zm] = visu_courbe(para.geo(m),para.cont(m,1),1000);
+      plot(axe_conf_geo,xm,zm,'k');
+      
+      %valle
+      [xv,zv] = visu_courbe(para.geo(m),para.cont(m,2),1000);
+      plot(axe_conf_geo,xv,zv,'k');
+    end
+  end
+end
+
+if para.dim ==4
+  set(axe_conf_geo,'Projection','perspective','Box','off')
+  grid on
+  light('Position',[2*min(get(axe_conf_geo,'xlim')) ...
+    2*max(get(axe_conf_geo,'ylim')) ...
+    5*min(get(axe_conf_geo,'zlim'))],'Style','infinite');
+  axis tight
+  set(axe_conf_geo, 'XColor', 'r');set(axe_conf_geo, 'YColor', 'g');set(axe_conf_geo, 'ZColor', 'b')
+else
+  set(axe_conf_geo,'Projection','orthographic','Box','on');
+  grid off
+  xlabel('X');ylabel('Z');zlabel('');
+  set(axe_conf_geo,'dataaspectratio',[1 1 1])
+  axis image
+  set(axe_conf_geo, 'XColor', 'k');set(axe_conf_geo, 'YColor', 'k');set(axe_conf_geo, 'ZColor', 'k')
+end
+
+%% background
+ Xl = get(axe_conf_geo,'xlim');
+ Yl = get(axe_conf_geo,'ylim');
+if para.geo(1)==3 %Medio estratificado DWN
+  % construir vector xp
+  xmin=0; xmax=0;
+  for i=2:para.nmed
+    xmin=min(xmin,para.cont(i,1).xa);
+    xmax=max(xmax,para.cont(i,1).xa+2*para.cont(i,1).a);
+  end
+  xp = linspace(xmin-2,xmax+2,100);
+  
+  % superficie libre
+  zp = 0*xp;
+  if para.dim == 3 % 3Daxisim
+    plot3(axe_conf_geo,xp,xp.*0,zp,'g');
+  elseif para.dim == 4 % 3Dgen
+    if ~isempty(xp)
+        plot3(axe_conf_geo,Xl,[Yl(1) Yl(1)],zp(1:2),'g');
+        plot3(axe_conf_geo,Xl,[Yl(2) Yl(2)],zp(1:2),'g');
+        plot3(axe_conf_geo,[Xl(1) Xl(1)],Yl,zp(1:2),'g');
+        plot3(axe_conf_geo,[Xl(2) Xl(2)],Yl,zp(1:2),'g');
+    end
+  else %2D
+    plot(axe_conf_geo,xp,zp,'g');
+  end
+  
+  % estratos
+  for i=1:para.nsubmed-1
+    xp = linspace(xmin-2,xmax+2,100);
+    zp = zp+para.reg(1).sub(i).h;
+    if para.dim == 3 % 3Daxisim
+      plot3(axe_conf_geo,xp,xp.*0,zp,'g');
+    elseif para.dim == 4 % 3Dgen
+      if ~isempty(xp)
+        plot3(axe_conf_geo,Xl,[Yl(1) Yl(1)],zp(1:2),'g');
+        plot3(axe_conf_geo,Xl,[Yl(2) Yl(2)],zp(1:2),'g');
+        plot3(axe_conf_geo,[Xl(1) Xl(1)],Yl,zp(1:2),'g');
+        plot3(axe_conf_geo,[Xl(2) Xl(2)],Yl,zp(1:2),'g');
+      end
+    else % 2D
+      plot(axe_conf_geo,xp,zp,'g');
+    end
+  end
+else %semiespacio o espacio completo
+  [xp,zp]=visu_courbe_m1(para.geo(1),para.cont(1,1),1000);
+  if para.dim >= 3
+    plot3(axe_conf_geo,xp,xp.*0,zp,'g');
+    if ~isempty(xp)
+    Xl = get(axe_conf_geo,'xlim');
+    Yl = get(axe_conf_geo,'ylim');
+    plot3(axe_conf_geo,Xl,[Yl(1) Yl(1)],zp(1:2),'g');
+    plot3(axe_conf_geo,Xl,[Yl(2) Yl(2)],zp(1:2),'g');
+    plot3(axe_conf_geo,[Xl(1) Xl(1)],Yl,zp(1:2),'g');
+    plot3(axe_conf_geo,[Xl(2) Xl(2)],Yl,zp(1:2),'g');
+    end
+  else
+    plot(axe_conf_geo,xp,zp,'g');
+  end
+end
+
+if nargin == 4
+iinc=get(bouton.inc,'value');
+else
+iinc = 1;
+end
+
+%% fuente
+%     hcent   = plot(axe_conf_geo,para.xs(iinc),para.zs(iinc),'r.');
+if para.dim >= 3
+  hcent   = plot3(axe_conf_geo,para.xs,para.ys,para.zs,'r.');
+else
+  hcent   = plot(axe_conf_geo,para.xs,para.zs,'r.');
+end
+
+if para.fuente==1
+  %     for iinc=1:min(para.ninc,5)
+  xarrow  =-.25*cos(para.gam(iinc)*pi/180);
+  yarrow  =-.25*sin(para.gam(iinc)*pi/180);
+  x       = [xarrow -xarrow];
+  y       = [yarrow -yarrow];
+  if para.dim >= 3
+    plot3(axe_conf_geo,x+para.xs(iinc),x.*0,y+para.zs(iinc),'r');
+  else
+    plot(axe_conf_geo,x+para.xs(iinc),y+para.zs(iinc),'r');
+  end
+  
+  rarrow  = 0.4;
+  xarrow  = rarrow*sin(para.gam(iinc)*pi/180);
+  yarrow  =-rarrow*cos(para.gam(iinc)*pi/180);
+  if para.dim >= 3
+    harrow  = quiver3(axe_conf_geo,para.xs(iinc),para.ys(iinc),para.zs(iinc),xarrow,0,yarrow,'r');
+  else
+    harrow  = quiver(axe_conf_geo,para.xs(iinc),para.zs(iinc),xarrow,yarrow,'r');
+  end
+  set(harrow,'MaxHeadSize',800);
+  set(harrow,'ShowArrowHead','off'); %bug matlab de mise a jour
+  set(harrow,'ShowArrowHead','on');
+  %     end
+elseif  para.fuente==2
+  if para.dim==1
+    if para.pol==1
+      hcent   = plot(axe_conf_geo,para.xs,para.zs,'ro');
+    elseif para.pol==2
+      rarrow  = 0.4;
+      for iinc=1:min(para.ninc,5)
+        xarrow  = rarrow*sin(para.gam(iinc)*pi/180);
+        yarrow  =-rarrow*cos(para.gam(iinc)*pi/180);
+        if para.dim >= 3
+          harrow  = quiver3(axe_conf_geo,para.xs(iinc),para.ys(iinc),para.zs(iinc),xarrow,0,yarrow,'r');
+        else
+          harrow  = quiver(axe_conf_geo,para.xs(iinc),para.zs(iinc),xarrow,yarrow,'r');
+        end
+        set(harrow,'MaxHeadSize',800);
+        set(harrow,'ShowArrowHead','off'); %bug matlab de mise a jour
+        set(harrow,'ShowArrowHead','on');
+      end
+    end
+  else
+    rarrow  = 0.4;
+    for iinc=1:min(para.ninc,5)
+      xarrow  = rarrow*sin(para.gam(iinc)*pi/180);
+      yarrow  =-rarrow*cos(para.gam(iinc)*pi/180);
+      if para.dim >= 3
+        harrow  = quiver3(axe_conf_geo,para.xs(iinc),para.ys(iinc),para.zs(iinc),xarrow,0,yarrow,'r');
+      else
+        harrow  = quiver(axe_conf_geo,para.xs(iinc),para.zs(iinc),xarrow,yarrow,'r');
+      end
+      set(harrow,'MaxHeadSize',800);
+      set(harrow,'ShowArrowHead','off'); %bug matlab de mise a jour
+      set(harrow,'ShowArrowHead','on');
+    end
+  end
+end
+if (para.dim >= 3)
+  set(axe_conf_geo,'zdir','reverse','dataaspectratio',[1 1 1]);
+  axes(axe_conf_geo)
+  xlabel('')
+  ylabel('')
+  xlabel('')
+else
+  set(axe_conf_geo,'ydir','reverse','dataaspectratio',[1 1 1]);
+  axes(axe_conf_geo)
+  xlabel('x')
+  ylabel('z')
+  zlabel('')
+end
+hold off
+drawnow update
+end
+%% Graficar la estratificación
+if nargin >= 3  %Medio estratificado DWN
+if para.geo(1)==3 && ishandle(axe_estrDWN)
+  axes(axe_estrDWN); cla
+%   hfigProf = figure(321);
+%   set(hfigProf,...
+%     'Units','normalized','name','Estratificación',...%'color',[1 1 1], ...
+%     'numberTitle','off','DockControls','off');
+%     'position',[0.005 0.01 .51 .9], ...
+     ParaRegSub = para.reg(1).sub(:);
+     if para.dim == 1
+       ShouldUseAlf = false;
+     else
+       ShouldUseAlf = true;
+     end
+  plotProfile(ParaRegSub,ShouldUseAlf);
+  
+  clear ParaRegSub ShouldUseAlf
+  axes(axe_conf_geo)
+end
+end
+end
