@@ -1,4 +1,4 @@
-function dibujo_allSpec(para,x,xi,bouton,RESULT,incidencia,tipolinea)
+function dibujo_allSpec(para,bouton,RESULT,x,xi,tipolinea)
 f = gcf;%figure;%(3456);
 set(f,'position',[24  1 1246 726]);
 uw = RESULT.uw;
@@ -8,21 +8,30 @@ Fq = (0:para.nf/2)*df;
 nfN = para.nf/2+1;
 cs    =correction_spectre(para,nfN,df);%pour supprimer la convolution temporelle de la source
 
-% if nargin > 3
-  i = incidencia;
-% else
-%   i = get(bouton.inc,'value');
-% end
+if nargin > 3
 r = x(4);
+else
+r = 1;
+x = [para.rec.xr(r) para.rec.yr(r) para.rec.zr(r)];
+end
+
+if nargin > 4
+i = xi(4);
+else
+i = get(bouton.inc,'value');
+xi = [para.xs(i) para.ys(i) para.zs(i)];
+end
+
 tx = ['x(',num2str(x(1)),...
   ',',num2str(x(2)),...
   ',',num2str(x(3)),')'...
   ' xi(',num2str(xi(1)),...
   ',',num2str(xi(2)),...
   ',',num2str(xi(3)),')'];
+
 tmpc    =get(bouton.couleur,'string');
 coul    =get(bouton.couleur,'value');
-if nargin == 7
+if nargin == 6
 c =[tmpc{coul} tipolinea];
 else
 c = tmpc{coul};
@@ -32,6 +41,7 @@ ha = zeros(1,12);
 subplot(4,3,1);  tT('u',uw(1:nfN,r,i,1),tx,c,Fq,cs); ha(1)=gca;
 subplot(4,3,2);  tT('v',uw(1:nfN,r,i,2),tx,c,Fq,cs); ha(2)=gca;
 subplot(4,3,3);  tT('w',uw(1:nfN,r,i,3),tx,c,Fq,cs); ha(3)=gca;
+if size(sw,4) ~= 0
 subplot(4,3,4);  tT('sxx',sw(1:nfN,r,i,1),tx,c,Fq,cs); ha(4)=gca;
 subplot(4,3,5);  tT('sxy',sw(1:nfN,r,i,4),tx,c,Fq,cs); ha(5)=gca;
 subplot(4,3,6);  tT('sxz',sw(1:nfN,r,i,5),tx,c,Fq,cs); ha(6)=gca;
@@ -41,6 +51,7 @@ subplot(4,3,9);  tT('syz',sw(1:nfN,r,i,6),tx,c,Fq,cs); ha(9)=gca;
 % subplot(4,3,10); title('szx'); ha(10)=gca; set(ha(10),'visible','off')
 % subplot(4,3,11); title('szy'); ha(11)=gca; set(ha(11),'visible','off')
 subplot(4,3,12); tT('szz',sw(1:nfN,r,i,3),tx,c,Fq,cs); ha(12)=gca;
+end
 linkaxes(ha,'x');
 
 subplot(4,3,11); tT('Legend',NaN,tx,c,Fq,cs);
@@ -57,7 +68,7 @@ set(gca,'xtick',[]); set(gca,'ytick',[])
 xlabel('');ylabel(''); set(LEG,'FontSize',15);
 set(LEG,'position',[4.1573e-01 1.2121e-01 2.0546e-01 1.3774e-01]);
 clear LEG
-if nargin == 3
+if nargin <= 4 % copiar la figura desde la pantalla principal
 hg = subplot(4,3,[7 10]);
 h=allchild(bouton.axe_conf_geo);
 copyobj(h,hg);
