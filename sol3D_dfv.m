@@ -1,27 +1,21 @@
-function [phi_fv,coord,DWN]=sol3D_dfv(para,fj,DWN,J)
+function [phi_fv,coord,DWN,para]=sol3D_dfv(para,fj,DWN,J)
 % calcula la densidad de fuerzas virtuales (dfv)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% discretizacion de los contornos %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if para.dim == 3
+if para.dim == 3 %  3D axisimétrico
   coord   = malla_geom(para,fj);
   coord   = malla_geom_axi(coord,para);
-elseif para.dim == 4
-  %%
-  k = strfind(para.cont(2,1).piece{1}.fileName,'.txt'); 
-  if ~isempty(k)
+elseif para.dim == 4% 3D goemetría general
   para = cargardelista(para,J);
-  para = getConnectivityStruct(para);
-  end
-  %%
-  para   = malla_geom3Dgen(para,fj);
+  para = malla_geom3Dgen(para,fj);
   coord = para.coord;
 end
 
 if para.GraficarCadaDiscretizacion
   figure(100);cla
-  dibujo_conf_geo(para,gca,bouton)
+  dibujo_conf_geo(para,gca)
   hold on
   if para.dim == 3
     for i_elem = 1:coord.nbpt % cada disco
@@ -60,14 +54,15 @@ if para.GraficarCadaDiscretizacion
   %   close(hf)
   %   cd ../../multi-dwn-ibem.matlab
 end
+
 %el dr varia en funcion de la velocidad y el dA en funcion de v^2
 nbeq    = coord.nbeq;
 nbpt    = coord.nbpt;
 ju      = coord.ju;
 nbeq2   = 3*nbeq;       %hay ecuaciones para phix, phiy y phiz
 % disp(['ifreq = ',num2str(para.j),' f=',num2str(fj),', system size: ',num2str(nbeq2),'^2'])
-str = sprintf([ '                               system size: ',num2str(nbeq2),'^2']);
-disp(str);
+% str = sprintf([ '                               system size: ',num2str(nbeq2),'^2']);
+% disp(str);
 
 % phi_fv =zeros(nbeq2,para.ninc);
 % warning('l 66')
@@ -220,7 +215,7 @@ end
 %% vectores de condiciones  a las fronteras %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-[B,DWN]	= vector_fuecacalnte3D(para,coord,DWN);
+[B,DWN]	= vector_fuente3D(para,coord,DWN);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %% matriz de coeficientes %
@@ -295,87 +290,85 @@ if para.geo(1)==3
     ind_superpos(izrfv==j1)= true;
     signo1          = (coord.Xim(indir(ind_superpos),1)==1) - (coord.Xim(indir(ind_superpos),1)==2);
     
-%     str = toc; disp(['Elapsed time is ', num2str(str), ' seconds. : Pre_for  calcul_']) ;tic
-%     disp(' ');disp(['j1=',num2str(j1),'/',num2str(length(zrfv)),' |j|=',num2str(nj)])
+    %     str = toc; disp(['Elapsed time is ', num2str(str), ' seconds. : Pre_for  calcul_']) ;tic
+    %     disp(' ');disp(['j1=',num2str(j1),'/',num2str(length(zrfv)),' |j|=',num2str(nj)])
     
     % repartir j entre varios procesos
-%     disp('j original:');disp(j)
-    l = length(j);% l = min(l,12);
-%     if l<12
-%       myCluster = parcluster('local');
-%       myCluster.NumWorkers = l;
-%     else
-%       myCluster.NumWorkers = 12;
-%     end
-      jDistD = distributed(j);
-%     disp(['numworks=' num2str(myCluster.NumWorkers)])
-%     disp('j distribuida:');disp(jDistD)
-    spmd %entonces coordf queda repartido y U_fic se apilaría por la dimension 3
-      if labindex <= l
-      jDist = getLocalPart(jDistD); %disp(['j at worker ' num2str(labindex) ':']); disp(jDist)
-      coordf.xs       = coord.x(jDist);
-      coordf.ys       = coord.y(jDist);
-      coordf.zs       = coord.z(jDist);
-      coordf.vnx      = coord.vnx(jDist);
-      coordf.vny      = coord.vny(jDist);
-      coordf.vnz      = coord.vnz(jDist);
-      coordf.dr       = coord.drxz(jDist);
-      if para.dim ~= 4
-        coordf.x0       = coord.x0(jDist);
-        coordf.th       = coord.th(jDist);
-        coordf.drxz     = coord.drxz(jDist);
-        coordf.nbptc    = coord.nbptc(jDist);
-      else % para.dim == 4
-        coordf.CubPtsex = coord.CubPtsex(:,:,jDist);
-        coordf.CubPts   = coord.CubPts  (:,:,jDist);
-      end
-%       disp('coordf:');disp(coordf);disp(['nsub:',num2str(para.nsubmed)]);disp('zs');disp(coordf.zs);disp('MAT');disp(para.reg(1).sub)
-      [U_f1c,S_f1c,U_f2c,S_f2c,U_f3c,S_f3c] = calcul_US_DWN_3D_polar_Ncapas_HS2(para,rec,salu,sals,coordf,ones(nrec,3),DWN);
-      end
-    end %spmd
+    %     disp('j original:');disp(j)
+    
+    l = length(j); % cantidad de fuentes a esta profundidad
     
     % Variables locales (completas):
-    nxs       = length(coord.x(j)); % el tamaño total
-    U_f1      = zeros(3,nrec,nxs);
-    U_f2      = zeros(3,nrec,nxs);
-    U_f3      = zeros(3,nrec,nxs);
-    S_f1    	= zeros(3,3,nrec,nxs);
-    S_f2    	= zeros(3,3,nrec,nxs);
-    S_f3    	= zeros(3,3,nrec,nxs);
-%     disp('size=');disp(size(U_f1c))
-    
-    % gather all composites (se transmite desde los procesadores)
-    l = size(U_f1c,2); %cantidad de piezas 
-    l = min(l,length(j)); %con datos
-    di3I = 1;
-    for ic = 1:l
-      di3F = di3I-1 + size(U_f1c{ic},3);
-      U_f1(:,:  ,di3I:di3F) = U_f1c{ic};
-      U_f2(:,:  ,di3I:di3F) = U_f2c{ic};
-      U_f3(:,:  ,di3I:di3F) = U_f3c{ic};
-      S_f1(:,:,:,di3I:di3F) = S_f1c{ic};
-      S_f2(:,:,:,di3I:di3F) = S_f2c{ic};
-      S_f3(:,:,:,di3I:di3F) = S_f3c{ic};
-      di3I = di3F+1;
+    U_f1      = zeros(3,  nrec,l);
+    U_f2      = zeros(3,  nrec,l);
+    U_f3      = zeros(3,  nrec,l);
+    S_f1      = zeros(3,3,nrec,l);
+    S_f2      = zeros(3,3,nrec,l);
+    S_f3      = zeros(3,3,nrec,l);
+    clear coordf
+%     myCluster = parcluster('local');
+    if l==1 % 
+%     disp('single j');disp(j)
+      coordf.xs       = coord.x(j);
+      coordf.ys       = coord.y(j);
+      coordf.zs       = coord.z(j);
+      coordf.vnx      = coord.vnx(j);
+      coordf.vny      = coord.vny(j);
+      coordf.vnz      = coord.vnz(j);
+      coordf.dr       = coord.drxz(j);
+      if para.dim ~= 4
+        coordf.x0       = coord.x0(j);
+        coordf.th       = coord.th(j);
+        coordf.drxz     = coord.drxz(j);
+        coordf.nbptc    = coord.nbptc(j);
+      else % para.dim == 4
+        coordf.CubPtsex = coord.CubPtsex(:,:,j);
+        coordf.CubPts   = coord.CubPts  (:,:,j);
+      end
+      [U_f1,S_f1,U_f2,S_f2,U_f3,S_f3] = calcul_US_DWN_3D_polar_Ncapas_HS2(para,rec,salu,sals,coordf,ones(nrec,3),DWN);
+      
+    else % el cálculo para varias fuentes se distribuye
+      jDistD = distributed(j);
+      %     disp(['numworks=' num2str(myCluster.NumWorkers)])
+%       disp('j distribuida:');disp(jDistD)
+      spmd %entonces coordf queda repartido y U_fic se apilaría por la dimension 3
+        if labindex <= l
+          jDist = getLocalPart(jDistD); %disp(['j at worker ' num2str(labindex) ':']); disp(jDist)
+          coordf.xs       = coord.x(jDist);
+          coordf.ys       = coord.y(jDist);
+          coordf.zs       = coord.z(jDist);
+          coordf.vnx      = coord.vnx(jDist);
+          coordf.vny      = coord.vny(jDist);
+          coordf.vnz      = coord.vnz(jDist);
+          coordf.dr       = coord.drxz(jDist);
+          if para.dim ~= 4
+            coordf.x0       = coord.x0(jDist);
+            coordf.th       = coord.th(jDist);
+            coordf.drxz     = coord.drxz(jDist);
+            coordf.nbptc    = coord.nbptc(jDist);
+          else % para.dim == 4
+            coordf.CubPtsex = coord.CubPtsex(:,:,jDist);
+            coordf.CubPts   = coord.CubPts  (:,:,jDist);
+          end
+          %       disp('coordf:');disp(coordf);disp(['nsub:',num2str(para.nsubmed)]);disp('zs');disp(coordf.zs);disp('MAT');disp(para.reg(1).sub)
+          [U_f1c,S_f1c,U_f2c,S_f2c,U_f3c,S_f3c] = calcul_US_DWN_3D_polar_Ncapas_HS2(para,rec,salu,sals,coordf,ones(nrec,3),DWN);
+        end
+      end %spmd
+      % gather all composites (se transmite desde los procesadores)
+      l = size(U_f1c,2); %cantidad de piezas
+      l = min(l,length(j)); %con datos
+      di3I = 1;
+      for ic = 1:l
+        di3F = di3I-1 + size(U_f1c{ic},3);
+        U_f1(:,:  ,di3I:di3F) = U_f1c{ic};
+        U_f2(:,:  ,di3I:di3F) = U_f2c{ic};
+        U_f3(:,:  ,di3I:di3F) = U_f3c{ic};
+        S_f1(:,:,:,di3I:di3F) = S_f1c{ic};
+        S_f2(:,:,:,di3I:di3F) = S_f2c{ic};
+        S_f3(:,:,:,di3I:di3F) = S_f3c{ic};
+        di3I = di3F+1;
+      end
     end
-    
-    %         coordf.xs       = coord.x(j);
-    %         coordf.ys       = coord.y(j);
-    %         coordf.zs       = coord.z(j);
-    %         coordf.vnx      = coord.vnx(j);
-    %         coordf.vny      = coord.vny(j);
-    %         coordf.vnz      = coord.vnz(j);
-    %         coordf.dr       = coord.drxz(j);
-    %         if para.dim ~= 4
-    %         coordf.x0       = coord.x0(j);
-    %         coordf.th       = coord.th(j);
-    %         coordf.drxz     = coord.drxz(j);
-    %         coordf.nbptc    = coord.nbptc(j);
-    %         else % para.dim == 4
-    %         coordf.CubPtsex = coord.CubPtsex(:,:,j);
-    %         coordf.CubPts   = coord.CubPts  (:,:,j);
-    %         end
-    %         [U_f1,S_f1,U_f2,S_f2,U_f3,S_f3] = calcul_US_DWN_3D_polar_Ncapas_HS2(para,rec,salu,sals,coordf,ones(nrec,3),DWN);
     
     U_f1 = permute(U_f1,[1 3 2]);
     S_f1 = permute(S_f1,[1 2 4 3]);
@@ -383,7 +376,7 @@ if para.geo(1)==3
     S_f2 = permute(S_f2,[1 2 4 3]);
     U_f3 = permute(U_f3,[1 3 2]);
     S_f3 = permute(S_f3,[1 2 4 3]);
-%     str = toc; disp(['Elapsed time is ', num2str(str), ' seconds. : Calculate calcul_']) ;tic
+    %     str = toc; disp(['Elapsed time is ', num2str(str), ' seconds. : Calculate calcul_']) ;tic
     DWN.Udiff(:,coord.phi(j,1),:)         = U_f1(:,:,nxrv+1:nxrv+nrr);%(3  ,nbeq,para.rec.m(1).nr)
     if length(sals)>nxrv && sals(nxrv+1)
       S0  = squeeze(reshape(S_f1(:,:,:,nxrv+1:nrec),1,9,nj,nrec-nxrv));
@@ -411,13 +404,23 @@ if para.geo(1)==3
     U_f3    = squeeze(U_f3(:,:,1:nxrv));
     S_f3    = squeeze(S_f3(:,:,:,1:nxrv));
     
-%     vn1=repmat(vn(1,:),1,nj);
-%     vn2=repmat(vn(2,:),1,nj);
-%     vn3=repmat(vn(3,:),1,nj);
     vn1=repmat(vn(1,:).',1,nj);
     vn2=repmat(vn(2,:).',1,nj);
     vn3=repmat(vn(3,:).',1,nj);
     dAj=repmat(coord.dA(j),nxrv,1);
+    
+    if length(j)==1
+      U_f1 = permute(U_f1,[1 3 2]);
+      S_f1 = permute(S_f1,[1 2 4 3]);
+      U_f2 = permute(U_f2,[1 3 2]);
+      S_f2 = permute(S_f2,[1 2 4 3]);
+      U_f3 = permute(U_f3,[1 3 2]);
+      S_f3 = permute(S_f3,[1 2 4 3]);
+      vn1=vn1.';
+      vn2=vn2.';
+      vn3=vn3.';
+      dAj=dAj.';
+    end
     
     diagindsup      =zeros(nj,2);
     ind0            =1:nxrv;
@@ -429,9 +432,9 @@ if para.geo(1)==3
     tn1         = squeeze(S_f1(1,1,:,:)).'.*vn1+squeeze(S_f1(2,1,:,:)).'.*vn2+squeeze(S_f1(3,1,:,:)).'.*vn3;
     tn2         = squeeze(S_f1(1,2,:,:)).'.*vn1+squeeze(S_f1(2,2,:,:)).'.*vn2+squeeze(S_f1(3,2,:,:)).'.*vn3;
     tn3         = squeeze(S_f1(1,3,:,:)).'.*vn1+squeeze(S_f1(2,3,:,:)).'.*vn2+squeeze(S_f1(3,3,:,:)).'.*vn3;
-%     tn1         = squeeze(S_f1(1,1,:,:)).*vn1+squeeze(S_f1(2,1,:,:)).*vn2+squeeze(S_f1(3,1,:,:)).*vn3;
-%     tn2         = squeeze(S_f1(1,2,:,:)).*vn1+squeeze(S_f1(2,2,:,:)).*vn2+squeeze(S_f1(3,2,:,:)).*vn3;
-%     tn3         = squeeze(S_f1(1,3,:,:)).*vn1+squeeze(S_f1(2,3,:,:)).*vn2+squeeze(S_f1(3,3,:,:)).*vn3;
+    %     tn1         = squeeze(S_f1(1,1,:,:)).*vn1+squeeze(S_f1(2,1,:,:)).*vn2+squeeze(S_f1(3,1,:,:)).*vn3;
+    %     tn2         = squeeze(S_f1(1,2,:,:)).*vn1+squeeze(S_f1(2,2,:,:)).*vn2+squeeze(S_f1(3,2,:,:)).*vn3;
+    %     tn3         = squeeze(S_f1(1,3,:,:)).*vn1+squeeze(S_f1(2,3,:,:)).*vn2+squeeze(S_f1(3,3,:,:)).*vn3;
     tn1(diagindsup)=signo1*0.5./coord.dA(j).';
     tn2(diagindsup)=0;
     tn3(diagindsup)=0;
@@ -493,7 +496,7 @@ if para.geo(1)==3
       %continuidad uy
       A(ju(indir)+nbpt+nbeq*2 ,coord.phi(j,1)+2*nbeq)= squeeze(U_f3(3,:,:)).'.*dAj;
     end
-%     str = toc; disp(['Elapsed time is ', num2str(str), ' seconds. : Distribute_calc'])
+    %     str = toc; disp(['Elapsed time is ', num2str(str), ' seconds. : Distribute_calc'])
   end
 end
 
@@ -523,7 +526,7 @@ else
   %         phi_fv(:,iinc) = phi_fv(:,iinc) + e;
   %         regularizacion_phi;
   %     end
-%   error('DebugBrake:  Fin de sol3D_dfv')
-% [char(8)*ones(1,lStr+lPrompt),str]  % borrar el texto sobre el tamaño del sistema
+  %   error('DebugBrake:  Fin de sol3D_dfv')
+  % [char(8)*ones(1,lStr+lPrompt),str]  % borrar el texto sobre el tamaño del sistema
 end
 end

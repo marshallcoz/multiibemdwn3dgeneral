@@ -148,7 +148,7 @@ if sum((k+1)==ncont)>0
     else
         %les contours se finissent tout seul
     end
-    if para.ondktp
+    if para.siDesktop
         plot(cont1(im).vec.xc(1:10:end),cont1(im).vec.zc(1:10:end),'k','linewidth',3)
     end
     %le prochain point d origine appartient au deuxieme

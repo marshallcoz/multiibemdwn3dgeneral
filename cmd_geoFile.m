@@ -11,37 +11,29 @@ if para.cont(thismed,1).piece{info.ThisPiece}.kind == 1 % free surface
   para.cont(thismed,1).piece{info.ThisPiece}.continuosTo = 0;
 end
 k = strfind(nom,'.txt');
-if isempty(k)
+if isempty(k) % Es un archivo .stl
+para.cont(thismed,1).piece{info.ThisPiece}.isalist = false;
 [para.cont(thismed,1).piece{info.ThisPiece}.geoFileData,flag] = ...
  previewSTL(bouton.gfPreview,para.cont(thismed,1).piece{info.ThisPiece});
-else
-    %flag = 0;
-    % para propositos toma el último de la lista
-    data = importdata(nom);
-    nn = length(data.rowheaders);
-    stage = struct('fileName','','jini',0,'jfin',0);
-    cd ..
-    cd ins
-    for idat = 1:nn
-    v = fullfile(pwd, data.rowheaders(idat));
-    stage(idat).fileName = v{1};
-    stage(idat).jini = data.data(idat,1);
-    stage(idat).jfin = data.data(idat,2);
-    end
-    cd ..
-    cd multi-dwn-ibem.matlab
-    para.cont(thismed,1).piece{info.ThisPiece}.stage = stage;
-    auxcont.fileName = v{1}; clear nn v
+else % es una lista de archivos .stl en la misma carpeta
+    para.cont(thismed,1).piece{info.ThisPiece}.isalist = true;
+    para.cont(thismed,1).piece{info.ThisPiece} = loadStageList(...
+      para.cont(thismed,1).piece{info.ThisPiece},para.nf,nom);
+    
+    % El ultimo de la lista para que los receptores tengan la región
+    % correcta:
+    auxcont.fileName = para.cont(thismed,1).piece{info.ThisPiece}.stage(end).fileName;
+    auxcont.isalist = true;
     auxcont.ColorIndex = para.cont(thismed,1).piece{info.ThisPiece}.ColorIndex;
-[para.cont(thismed,1).piece{info.ThisPiece}.geoFileData,~] = ...
+[para.cont(thismed,1).piece{info.ThisPiece}.geoFileData,flag] = ...
  previewSTL(bouton.gfPreview,auxcont);
     clear auxcont
-   flag = 2;
 end
-if flag == 0
+
+if flag == 0 % cuando no se pudo cargar
   para.cont(thismed,1).piece{info.ThisPiece}.fileName ='X';
 else
-  % apilar
+  % apilar 
   para.cont(thismed,1).FV.vertices = [];
   para.cont(thismed,1).FV.faces = [];
   para.cont(thismed,1).FV.facenormals = [];

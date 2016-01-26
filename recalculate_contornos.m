@@ -44,7 +44,7 @@ end
 %y se reescribe los contornos.
 %A la diferencia de anteriormente, ya no se considera un contorno arriba y
 %abajo por un medio, pero un solo contorno entero cerado
-if para.ondktp
+if para.siDesktop
     waitbarSwitch(0,h,'Check contornos');
 else
     disp('Check contornos')
@@ -572,7 +572,7 @@ for m=para.nmed:-1:1
             end
         end
     end
-    if para.ondktp
+    if para.siDesktop
         plot(cont1(im).vec.xc(1:10:end),cont1(im).vec.zc(1:10:end),'k','linewidth',3)
         %title(['wait ',num2str(para.nmed-m+1),'/',num2str(para.nmed)])
         %pause(.1)
@@ -601,7 +601,7 @@ para.subm =subm;
 % De "cont1" extraemos "seg"
 j   = 1;
 fus = zeros(nmed1,nmed1);
-if para.ondktp
+if para.siDesktop
     waitbarSwitch(0,h,'Calculo segmentos de colocacion');
 else
     disp('Calculo segmentos de colocacion');
@@ -669,7 +669,7 @@ for i = 1:nmed1
                     %frontera libre del semi-espacio
                     seg(j).mv       = im;
                 end
-                if para.ondktp
+                if para.siDesktop
                     plot( seg(j).vec.xc(1:10:end), seg(j).vec.zc(1:10:end),'r','linewidth',3)
                 end
                 
@@ -770,7 +770,7 @@ for i = 1:nseg1
         dr = sqrt((seg(i).vec.xc(1)-seg(i).vec.xc(2))^2+(seg(i).vec.zc(1)-seg(i).vec.zc(2))^2);
         [seg_unidos(k),listm]=suit_seg(seg,seg_unidos(k),0,dr,mi,listm,fus);
         [seg_unidos(k),listm]=suit_seg(seg,seg_unidos(k),1,dr,mi,listm,fus);
-        if para.ondktp
+        if para.siDesktop
             plot(seg_unidos(k).vec.xc(1:10:end),seg_unidos(k).vec.zc(1:10:end),'m','linewidth',3)
         end
         

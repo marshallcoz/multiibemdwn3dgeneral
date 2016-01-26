@@ -6,7 +6,9 @@ film = para.film;
 %   The movie es made with data either from a grid of receivers,
 %   from receivers on the boundary (The boundary appears deformed)
 %   or both.
-if (para.dim >= 3); filmoscopio3D(para,utc,stc,film); return; end
+if (para.dim >= 3) 
+  filmoscopio3D(para,utc,stc,film);return
+end
 filmeRange = film.filmeRange;
 filmStyle    = film.filmStyle;
 filmeMecElem = film.filmeMecElem;
@@ -34,7 +36,10 @@ nt=n1;
 listinc={'P','S','R'};
 fig=figure('Position', [0, 0, 800, 800],'Color',[1 1 1]);
 set(fig,'DoubleBuffer','on');
-name=[para.nomrep,para.nomrep(1),'filmtmp','_000'];
+cd ..; cd out
+thisdir = pwd;
+cd ..; cd multi-dwn-ibem.matlab/
+name=[thisdir,thisdir(1),'filmtmp','_000'];
 cont1 = para.cont1;
 
 nresAtBoundary = para.rec.nresAtBoundary;

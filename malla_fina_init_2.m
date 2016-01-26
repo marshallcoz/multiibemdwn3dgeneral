@@ -54,7 +54,7 @@ end
 % ciclo sobre los contornos
 for m=2:para.nmed
     for c=1:2
-        if para.ondktp
+        if para.siDesktop
             waitbarSwitch(m/para.nmed,h,['Calculo del contorno ',num2str(c),' del medio ',num2str(m),' de manera fina']);
         else
             disp(['Calculo del contorno ',num2str(c),' del medio ',num2str(m),' de manera fina']);

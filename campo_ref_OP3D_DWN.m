@@ -45,8 +45,8 @@ vn(1,:)	= coord.vnx(indi);
 vn(2,:)	= coord.vny(indi);
 vn(3,:)	= coord.vnz(indi);
 
-t(1,:)  = squeeze(s(1,1,:)).'.*vn(1,:)+squeeze(s(1,2,:)).'.*vn(2,:)+squeeze(s(1,3,:)).'.*vn(3,:);
-t(2,:)  = squeeze(s(1,2,:)).'.*vn(1,:)+squeeze(s(2,2,:)).'.*vn(2,:)+squeeze(s(2,3,:)).'.*vn(3,:);
-t(3,:)  = squeeze(s(1,3,:)).'.*vn(1,:)+squeeze(s(2,3,:)).'.*vn(2,:)+squeeze(s(3,3,:)).'.*vn(3,:);
+t(1,indi)  = squeeze(s(1,1,:)).'.*vn(1,:)+squeeze(s(1,2,:)).'.*vn(2,:)+squeeze(s(1,3,:)).'.*vn(3,:);
+t(2,indi)  = squeeze(s(1,2,:)).'.*vn(1,:)+squeeze(s(2,2,:)).'.*vn(2,:)+squeeze(s(2,3,:)).'.*vn(3,:);
+t(3,indi)  = squeeze(s(1,3,:)).'.*vn(1,:)+squeeze(s(2,3,:)).'.*vn(2,:)+squeeze(s(3,3,:)).'.*vn(3,:);
 end
 end

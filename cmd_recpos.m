@@ -1,5 +1,7 @@
-if para.dim == 4
-  if para.recpos == 1; para.recpos = 2;end
+if para.dim >= 3
+  if para.recpos == 1; 
+    para.recpos = 2;
+  end
 end
 
 set(bouton.recpos   ,'value'    ,para.recpos);
@@ -23,7 +25,7 @@ if para.recpos==1
     %superficie
     set(info.recdr  ,'visible','on');
     set(bouton.dxr  ,'visible','on');
-    set(bouton.xri  ,'callback','para.rec.xri=str2num(get(bouton.xri,''string''));dibujo_conf_geo(para,bouton.axe_conf_geo,bouton);');
+    set(bouton.xri  ,'callback','para.rec.xri=str2num(get(bouton.xri,''string''));');
     
     if para.dim==1
         para.rec.nrecy=1;
@@ -33,7 +35,7 @@ if para.recpos==1
         set(bouton.nrecy,'visible','off');
     else
         set(info.recy   ,'visible','on');
-        set(bouton.yri  ,'visible','on','callback','para.rec.yri=str2num(get(bouton.yri,''string''));dibujo_conf_geo(para,bouton.axe_conf_geo,bouton);');
+        set(bouton.yri  ,'visible','on','callback','para.rec.yri=str2num(get(bouton.yri,''string''));');
         set(bouton.dyr  ,'visible','on');
         set(bouton.nrecy,'visible','on');
     end
@@ -68,8 +70,8 @@ elseif para.recpos==2
     
     set(info.irec,'visible','off');
     set(bouton.irec,'visible','off');
-    set(bouton.xri  ,'callback','para.rec.xri=str2num(get(bouton.xri,''string''));dibujo_conf_geo(para,bouton.axe_conf_geo,bouton);');
-    set(bouton.zri  ,'callback','para.rec.zri=str2num(get(bouton.zri,''string''));dibujo_conf_geo(para,bouton.axe_conf_geo,bouton);');
+    set(bouton.xri  ,'callback','para.rec.xri=str2num(get(bouton.xri,''string''));');
+    set(bouton.zri  ,'callback','para.rec.zri=str2num(get(bouton.zri,''string''));');
 elseif para.recpos==3
     %posicion libre
     if para.chgrec==1
@@ -112,13 +114,13 @@ elseif para.recpos==3
     set(info.irec,'visible','on');
     set(bouton.irec,'visible','on');
     irec = get(bouton.irec,'value');
-    set(bouton.xri  ,'string',para.rec.xr(irec),'callback',['para.rec.xr(',num2str(irec),')=str2num(get(bouton.xri,''string''));dibujo_conf_geo(para,bouton.axe_conf_geo,bouton);']);
-    set(bouton.zri  ,'string',para.rec.zr(irec),'callback',['para.rec.zr(',num2str(irec),')=str2num(get(bouton.zri,''string''));dibujo_conf_geo(para,bouton.axe_conf_geo,bouton);']);
+    set(bouton.xri  ,'string',para.rec.xr(irec),'callback',['para.rec.xr(',num2str(irec),')=str2num(get(bouton.xri,''string''));']);
+    set(bouton.zri  ,'string',para.rec.zr(irec),'callback',['para.rec.zr(',num2str(irec),')=str2num(get(bouton.zri,''string''));']);
     if para.dim<3
         set(info.recy   ,'visible','off');
         set(bouton.yri  ,'visible','off');
     else
         set(info.recy   ,'visible','on');
-        set(bouton.yri  ,'visible','on','string',para.rec.yr(irec),'callback',['para.rec.yr(',num2str(irec),')=str2num(get(bouton.yri,''string''));dibujo_conf_geo(para,bouton.axe_conf_geo,bouton);']);
+        set(bouton.yri  ,'visible','on','string',para.rec.yr(irec),'callback',['para.rec.yr(',num2str(irec),')=str2num(get(bouton.yri,''string''));']);
     end
 end

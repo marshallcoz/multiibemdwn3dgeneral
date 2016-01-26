@@ -55,7 +55,7 @@ if para.dim==1
             if para.fuente==1 %OP
                 [uw(:,iinc,:),~,~]   = campo_ref_PSV_OPHeI(xs(iinc),zs(iinc),coordr,kpi,ksi,kri,Ci,polOP(iinc),kxk(iinc));
             elseif para.fuente==2 %FP
-                [uw(:,iinc,:),~,~]  = campo_ref_PSV_FP(xs(iinc),zs(iinc),coordr,kpi,ksi,Ci,fij(iinc,:),salu,sals,para);
+                [uw(:,iinc,:),~,sw(:,iinc,:)]  = campo_ref_PSV_FP(xs(iinc),zs(iinc),coordr,kpi,ksi,Ci,fij(iinc,:),salu,sals,para);
             end
         end
 %         if para.fuente==1

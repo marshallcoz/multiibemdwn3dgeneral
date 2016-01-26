@@ -1,8 +1,25 @@
 function [out,flag] = previewSTL(h,cont)
 % Adaptado de CAD2MATDEMO de Don Riley (c) 2003
-out = []; flag = 0;
-[F,V,N,C,T,A,name,errmsg] = rndread(cont.fileName);
-axes(h); cla;
+out = []; flag = 0; 
+
+if cont.isalist
+cd ..
+cd ins
+v = fullfile(pwd, cont.fileName);
+if iscell(v)
+nombreCompleto = v{1};
+else
+nombreCompleto = v;  
+end
+cd ..
+cd multi-dwn-ibem.matlab
+else
+  nombreCompleto = cont.fileName;
+end
+
+disp(['loading: ' nombreCompleto]);
+[F,V,N,C,T,A,name,errmsg] = rndread(nombreCompleto);
+disp(['cant de puntos de colocación: ' num2str(length(C))])
 if ~strcmp(errmsg,''); return; end
 out.fileName = name;
 out.centers = C;
@@ -11,9 +28,12 @@ out.areas = A;
 out.F = F;
 out.V = V;
 out.N = N';
+if (h ~= 0)
+axes(h); cla;
 hold on
 plotSTL(h,out,cont.ColorIndex,0.5);
 axes(h);light;daspect([1 1 1]) 
+end
 flag = 1;
 end
 

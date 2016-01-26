@@ -32,7 +32,7 @@ switch colorflag % 'b','r','g','y','m','c','none'
     set(p, 'FaceColor', 'none');
     set(p, 'EdgeColor', [0.8 0.8 0.8]); 
     set(p, 'EdgeAlpha',EA/2)
-    normcol='none';
+    normcol='';
   otherwise
     set(p, 'FaceColor', 'black');
 end
@@ -46,10 +46,12 @@ xlabel('X'),ylabel('Y'),zlabel('Z')
 if isfield(geoFileData,'N')
 N = geoFileData.N';
 if (size(N,1)==3)
+if ~strcmp(normcol,'')
 for i=1:size(C,2)
     vn(:,1) = C(:,i);
     vn(:,2) = C(:,i)+0.5*A(i)*N(:,i);
     plot3(vn(1,:),vn(2,:),vn(3,:),normcol);
+end
 end
 end
 end

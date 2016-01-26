@@ -16,14 +16,17 @@ else
         rafraichi;
     end
 end
-para.nomrep=tmprep;
-para.nomcarpeta=tmprep1;
+para.nomrep=pwd;
+para.nomcarpeta=pwd;
 b_dib(1).name=para.name;
 if (isfield(para,'cont1'));
 para.cont1 = cont1;
 end
+
+if exist('utc','var')
 RESULT.utc=utc;     clear utc
 RESULT.uw=uw;       clear uw
 RESULT.stc=stc;     clear stc
 RESULT.sw=sw;       clear sw
 RESULT.cont1=cont1; clear cont1
+end

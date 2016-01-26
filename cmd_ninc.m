@@ -35,8 +35,8 @@ if para.ninc~=length(para.gam)
         cmd_inc;
     end
 else
-    if para.rafraichi==0
-        dibujo_conf_geo(para,bouton.axe_conf_geo,bouton);
-    end
+%     if para.rafraichi==0
+%         dibujo_conf_geo(para,bouton.axe_conf_geo,bouton);
+%     end
 end
 

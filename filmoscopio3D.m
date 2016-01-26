@@ -22,11 +22,17 @@ dt = (1/(df*2*(nfN+zerospad))*...
 tps     = 0:dt:1/df;
 tps     = para.delais+tps;
 
-% listinc={'P','S','R'};
+% tomamos las características de la vista previa en main:
 [az,el]=view; 
+ds = daspect;
+xl = xlim; yl = ylim; zl = zlim;
+
 fig=figure('Position', [0, 0, 800, 800],'Color',[1 1 1]);
 set(fig,'DoubleBuffer','on'); set(gcf,'Renderer','zbuffer')
-name=[para.nomrep,para.nomrep(1),'filmtmp','_000'];
+cd ..; cd out
+thisdir = pwd;
+cd ..; cd multi-dwn-ibem.matlab/
+name=[thisdir,thisdir(1),'filmtmp','_000'];
 % cont1 = para.cont; % cont1
 
 % nresAtBoundary = para.rec.nresAtBoundary;
@@ -56,15 +62,17 @@ mov.FrameRate = film.fps;
 open(mov);
 nam = char(mecelemlist(filmeMecElem));
 for iinc=1
-  
-  dibujo_conf_geo(para,gca)
+  cmd_iflist_loadthelast;
+  dibujo_conf_geo(para,gca);
   xlim('manual');ylim('manual');zlim('manual')
   hold on
   view(az,el);
+  daspect(ds);
   m3max=max(max(max(max(utc(filmeRange,:,iinc,:)))))/mxWarp;
   u =utc(filmeRange,:,iinc,1)/m3max;
   v =utc(filmeRange,:,iinc,2)/m3max;
   w =utc(filmeRange,:,iinc,3)/m3max;
+  minw = min(min(min(min(w))));
   r = (u.^2+v.^2+w.^2).^0.5;
   maxr = max(max(r));
   mx = mean(maxr);
@@ -106,7 +114,8 @@ for iinc=1
       end
       if (filmStyle == 2)
         tmph = mesh(MXi,MYi,MZi,C);
-        caxis([-40 1]); %todo blanco
+%         caxis([-40 1]); %todo blanco
+        set(tmph,'FaceAlpha',0)
       elseif (filmStyle == 3)
         tmph = surf(MXi,MYi,MZi,C,'FaceColor','interp',...
           'FaceLighting','phong','AmbientStrength',.9,'DiffuseStrength',.8,...
@@ -114,7 +123,8 @@ for iinc=1
           'BackFaceLighting','unlit',...
           'EdgeColor','none','LineStyle','none');
         caxis([-0.1*maxr 0.005*maxr]);
-        alpha(tmph,0.5);
+        alpha(tmph,0.6);
+        set(tmph,'FaceAlpha',0.2);
         camlight right
         %           caxis([-1*maxr 1*maxr]);
         %           caxis([-1*maxr 0.05*maxr]); % fondo blanco, color en los frentes de onda
@@ -123,7 +133,13 @@ for iinc=1
         tmph = quiver3(x(iv),y(iv),z(iv),n(1,iv),n(2,iv),n(3,iv),max(mag),'k');
       end
     colormap(gray);
-    
+%     if it==1
+%     axis tight
+%     xl = xlim; yl = ylim; zl = zlim;
+%     else
+    xlim(xl); ylim(yl); zlim(zl); %garantizar que se vean todos los receptores
+%     end
+    zlim([minw,max(get(gca,'zlim'))]);
     if (filmStyle == 1)
       t_title = '|| U ||';
     else
@@ -132,7 +148,7 @@ for iinc=1
       else
         t_title = ['|| ' nam ' ||'];
       end
-      shading faceted
+%       shading faceted
     end
     title(t_title)
     % Marca de tiempo

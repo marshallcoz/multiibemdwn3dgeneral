@@ -66,13 +66,16 @@ if para.b_dib(1).dessinsp==1
 %         plot(Fq,imag(varplotw(1:nfN,irec,iinc,i+(ifig0-1)*fieldV(ifig).nc)),...
 %                [couleur,'--'],'LineWidth',2)
 %         hold on;
-        h=plot(Fq,imag(varplotw(1:nfN,irec,iinc,i+(ifig0-1)*fieldV(ifig).nc).*cspectre.'),couleur);
-        set(h,{'DisplayName'},{['f_R_',num2str(irec),'_I',num2str(iinc)]});ha(i)=gca;
+        espe = varplotw(1:nfN,irec,iinc,i+(ifig0-1)*fieldV(ifig).nc).*cspectre.';
+        hr=plot(Fq,real(espe),[couleur '-']); hold on
+        hi=plot(Fq,imag(espe),[couleur '--']);
+        set(hr,{'DisplayName'},{['f_R_',num2str(irec),'_I',num2str(iinc)]});
+        set(hi,{'DisplayName'},{['f_R_',num2str(irec),'_I',num2str(iinc)]});ha(i)=gca;
 %         legend('pulse response','source response');
         xlabel('frequency')
         ylabel('amplitude')
     end
-    linkaxes(ha,'x'); clear ha h
+    linkaxes(ha,'x'); clear ha h espe
 end
 
 %H/V 2D

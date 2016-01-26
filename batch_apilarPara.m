@@ -4,6 +4,7 @@ function batch_apilarPara(para)
 % If batch.mat does not exist it is created
 
   % borrar el archivo si es especificado
+  para.name  = namefile(para);
 cd ..
 cd out
 if ~isstruct(para)

@@ -10,8 +10,7 @@ if refrescar == 3 % refrescar sólo una vez
 end
 if refrescar == 2
 axes(axe_conf_geo); cla; hold on
-disp('refrescando imagen')
-drawnow limitrate
+if (nargin == 4); disp('refrescando imagen'); drawnow limitrate; end
 %-----------------------%
 % parametros geometrico %
 %-----------------------%
@@ -30,7 +29,7 @@ end
 %     xr      = para.rec.xr;
 %     zr      = para.rec.zr;
 % else
-para     = pos_rec(para);
+para    = pos_rec(para);
 xr      = para.rec.xr;
 yr      = para.rec.yr;
 zr      = para.rec.zr;
@@ -38,13 +37,13 @@ zr      = para.rec.zr;
 if nargin == 4
     verRecepotores = get(bouton.verReceptores,'value');
 else
-    verRecepotores = true;
+    verRecepotores = false;
 end
 if verRecepotores
 if para.dim == 4
   colFondo = 'k'; arrcol = ['k','b','r','g','y','m','c','w']; marcador = '.';
   if nargin == 2; marcador = 'none'; end
-  for ip = 1:size(xr)
+  for ip = 1:length(xr)
     if para.rec.medio(ip) == 1
       plot3(axe_conf_geo,xr(ip),yr(ip),zr(ip),...
         ['.' colFondo],'MarkerSize',10,'Marker',marcador)
@@ -61,10 +60,9 @@ else
   plot(axe_conf_geo,xr,zr,'.b'); view(2)
 end
 end
-hold on
 
 %% contornos
-if nargin == 3; EA = 0.2; else EA = 0.5;end
+if nargin == 3; EA = 0.2; elseif nargin == 2; EA = 0.; else EA = 0.5;end
 for m=2:para.nmed
   if para.dim == 4 % 3Dgeneral
     view(3)
@@ -83,7 +81,7 @@ for m=2:para.nmed
           end
           plotSTL(axe_conf_geo,thisGF,...
                                para.cont(m,1).piece{p}.ColorIndex,EA);
-          if get(bouton.verNormales,'value'); clear thisGF; end
+          clear thisGF
         end
       end
     end
@@ -117,8 +115,9 @@ if para.dim ==4
   grid on
   light('Position',[2*min(get(axe_conf_geo,'xlim')) ...
     2*max(get(axe_conf_geo,'ylim')) ...
-    5*min(get(axe_conf_geo,'zlim'))],'Style','infinite');
+    2*max(get(axe_conf_geo,'zlim'))],'Style','infinite'); %ambient
   axis tight
+  if ~(nargin == 4); zlim([ -1 max(get(axe_conf_geo,'zlim'))]); end
   set(axe_conf_geo, 'XColor', 'r');set(axe_conf_geo, 'YColor', 'g');set(axe_conf_geo, 'ZColor', 'b')
 else
   set(axe_conf_geo,'Projection','orthographic','Box','on');
@@ -192,8 +191,14 @@ end
 
 if nargin == 4
 iinc=get(bouton.inc,'value');
+gam = str2double(get(bouton.gam,'string')); 
+gam=gam*pi/180;
+phi = str2double(get(bouton.phi,'string')); 
+phi=phi*pi/180;
 else
 iinc = 1;
+gam = para.gam(iinc)*pi/180;
+phi = para.phi(iinc)*pi/180;
 end
 
 %% fuente
@@ -248,19 +253,29 @@ elseif  para.fuente==2
       end
     end
   else
-    rarrow  = 0.4;
-    for iinc=1:min(para.ninc,5)
+%     rarrow  = 0.4;
+    extent = get(gca,'xlim');
+    rarrow = 0.2*(max(extent)-min(extent));
+%     for iinc=1:min(para.ninc,5)
+      if para.dim >= 3
+ fij     = [(sin(gam).*cos(phi)).' ...
+            (sin(gam).*sin(phi)).' ...
+            -cos(gam).'];
+  xarrow  = rarrow*fij(1);
+  yarrow  = rarrow*fij(2);
+  zarrow  = rarrow*fij(3);
+        
+        
+        harrow  = quiver3(axe_conf_geo,para.xs(iinc),para.ys(iinc),para.zs(iinc),xarrow,yarrow,zarrow,'r');
+      else
       xarrow  = rarrow*sin(para.gam(iinc)*pi/180);
       yarrow  =-rarrow*cos(para.gam(iinc)*pi/180);
-      if para.dim >= 3
-        harrow  = quiver3(axe_conf_geo,para.xs(iinc),para.ys(iinc),para.zs(iinc),xarrow,0,yarrow,'r');
-      else
         harrow  = quiver(axe_conf_geo,para.xs(iinc),para.zs(iinc),xarrow,yarrow,'r');
       end
       set(harrow,'MaxHeadSize',800);
       set(harrow,'ShowArrowHead','off'); %bug matlab de mise a jour
       set(harrow,'ShowArrowHead','on');
-    end
+%     end
   end
 end
 if (para.dim >= 3)

@@ -16,7 +16,7 @@ n = 0;
 for m = 2:para.nmed  % 1 ?
   n = n + para.cont(m,1).NumPieces;
 end
-cont1 = struct('m', zeros(1,n),...??
+cont1 = struct('m', zeros(1,n),...
               'mv', zeros(1,n),...
              'vec', [],...
            'radio', zeros(1,n),...
@@ -49,20 +49,20 @@ for m = 2:para.nmed
           cont1(i).vec.vnz(range) = -cont1(i).vec.vnz(range);
           cont1(i).radio = sqrt(para.cont(m,1).piece{p}.geoFileData.areas(:,1)/pi);
           % la velocidad más baja de cada lado del contorno en el punto
-          indm    = [cont1(i).m;cont1(i).vec.mv];
-          indm(indm==0)   = [];
+          indm    = [cont1(i).m;cont1(i).vec.mv]; % los dos medios involucrados
+          indm(indm==0)   = []; 
           indm    = squeeze(indm);
           v       = 0*indm; %init
           for k=1:length(indm)
             if para.reg(indm(k)).rho==0 % si está hueco
               v(k) = 0;
             else
-                if isempty(para.reg(indm(k)).sub)
-                   v(k) = para.reg(indm(k)).bet;
-                else
-                   v(k) = min(para.reg(indm(k)).sub(1:end).bet);
+                if isempty(para.reg(indm(k)).sub) %              si la regíon referida,
+                   v(k) = para.reg(indm(k)).bet; %               es un medio cerrado o,
+                else%                                            es fondo estratificado
+                   v(k) = min(para.reg(indm(k)).sub(1:end).bet); 
                 end
-              if v(k)==0
+              if v(k)==0 % si es un medio acústico
                   if isempty(para.reg(indm(k)).sub)
                      v(k) = para.reg(indm(k)).alpha;
                   else
@@ -92,6 +92,9 @@ for m = 2:para.nmed
           D.N(range,3) = -D.N(range,3);
           D.radios = sqrt(D.areas(:,1)/pi);
           D.minVel = min(v);
+          if isfield(para.cont(m,1).piece{p},'subdibData')
+            para.cont(m,1).piece{p} = rmfield(para.cont(m,1).piece{p},'subdibData');
+          end
           para.cont(m,1).piece{p}.subdibData = D;
           i = i + 1;
         end

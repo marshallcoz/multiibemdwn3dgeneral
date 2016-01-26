@@ -32,6 +32,7 @@ if C(6,6)~=0
     % tensor de esfuerzos
     vn(1,1:npt) = 1; vn(2,1:npt) = 0;
     Tij(:,:,salt) = Tij_PSV(ks,kp,r(salt),g(:,salt),C,vn(:,salt));
+    if isfield(coord,'dr')
     ipb=find(r<2*para.npplo*coord.dr);
     if ~isempty(ipb)
         j=1:n;
@@ -44,6 +45,7 @@ if C(6,6)~=0
             Tij(:,:,j1(salt(ipb))) = Tij_PSV_r_small_FP(coordaux,xf,zf,j1(salt(ipb)),ks,kp,gaussian,C);
         end
     end
+    end
     k = 1; sal = para.sortie;
     if sal.sxx==1
     sout(k,:) = Tij(1,1,:)*fij(1)+ Tij(1,2,:)*fij(2); k=k+1;%sxx
@@ -54,11 +56,13 @@ if C(6,6)~=0
     if sal.szz==1
     vn(1,1:npt) = 0; vn(2,1:npt) = 1;
     Tij(:,:,salt) = Tij_PSV(ks,kp,r(salt),g(:,salt),C,vn(:,salt));
+    if exist('ipb','var')
     if ~isempty(ipb)
         coordaux.vnx=vn(1,1:npt); coordaux.vnz=vn(2,1:npt);
         if ~isempty(j1(salt(ipb)))
             Tij(:,:,j1(salt(ipb))) = Tij_PSV_r_small_FP(coordaux,xf,zf,j1(salt(ipb)),ks,kp,gaussian,C);
         end
+    end
     end
     sout(k,:) = Tij(2,1,:)*fij(1)+ Tij(2,2,:)*fij(2); %szz
     end

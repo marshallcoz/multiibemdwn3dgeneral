@@ -264,7 +264,7 @@ fmax = 1; %Hertz
 lamdamin = Bmin/fmax/6; %km
 numelems = 4/lamdamin/2; %cantidad de triangulos 
 
-n = 5; %(número non) %35
+n = 37; %(número non) %35
 xlin = linspace(-5,5,n);
 ylin = linspace(-5,5,n);
 [x,y] = meshgrid(xlin,ylin);

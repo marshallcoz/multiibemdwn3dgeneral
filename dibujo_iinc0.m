@@ -89,7 +89,7 @@ elseif fieldV(ifig).name(1)=='S'
     ifig0=1;
 end
 nrec = size(varplot,2);
-wiggle = get(para.b_dib.wiggle,'value'); %disp(['wiggle=' num2str(wiggle)])
+wiggle = get(para.b_dib(ifig).wiggle,'value'); %disp(['wiggle=' num2str(wiggle)])
 if para.dim < 3
     if para.rec.nrecy==1 && para.rec.nrecz==1
         %caso tipico de los receptores en superficie

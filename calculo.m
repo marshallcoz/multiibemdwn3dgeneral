@@ -4,7 +4,7 @@ function [RESULTADO,para]=calculo(para)
 tstart  = tic;
 clearfield;
 cparll  = ~isempty(gcp('nocreate'));
-para.GraficarCadaDiscretizacion = false;
+para.GraficarCadaDiscretizacion = true;
 if isempty(gcp('nocreate'))
     % parpool(12) %Max permitido en Tonatiuh
     while cparll==0
@@ -16,7 +16,9 @@ end
 nametmp        = namefile(para);
 para.nametmp   = nametmp;
 
-if para.ondktp
+if ~isfield(para,'siDesktop'); para.siDesktop = false; end
+
+if para.siDesktop
   h = waitbarSwitch(0,'Preparacion integracion de Gauss','CreateCancelBtn','closereq;');
 else
   h = 0;
@@ -86,7 +88,7 @@ if para.espyinv==1
       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       % dicretizacion de los contornos originales 2D %
       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      if para.ondktp
+      if para.siDesktop
         waitbarSwitch(0,h,'Calculo del contorno fino');
       end
       
@@ -108,7 +110,7 @@ if para.espyinv==1
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % define si usar fuente imagen %
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    if para.ondktp
+    if para.siDesktop
       waitbarSwitch(0.75,h,'Calculo caracteristicas de la fuente');
     end
     if para.geo(1)==2 %semi-espacio
@@ -157,7 +159,8 @@ if para.espyinv==1
     end
   else %3Dgen
     if para.fuente==1 %OP
-      para.xzs=ones(1,para.ninc)*inclusiontest3G(0,0,1e6,para);
+      % la onda plana surge del medio de fondo siempre:
+      para.xzs=ones(1,para.ninc);%*inclusiontest3G(0,0,1e6,para);
     elseif para.fuente==2 %FP
       para.xzs=inclusiontest3G(...
         para.xs(1:para.ninc),...
@@ -173,7 +176,7 @@ if para.espyinv==1
       (para.dim==1 && ((max(para.tipo_onda==2)==1 && para.pol==1) || ...
       (max(para.tipo_onda==3)==1 && para.pol==2))) || ...
       (para.dim>=3 && (max(para.tipo_onda==4)==1 || max(para.tipo_onda==5)==1))
-    if para.ondktp
+    if para.siDesktop
       waitbarSwitch(0,h,'Calculo de las curvas de dispersion');
     end
     
@@ -195,7 +198,7 @@ if para.espyinv==1
   if  para.geo(1)==3 && para.fuente==2 && para.meth_PS==1 && para.nsubmed>1
     %calcul des courbes de dispersion en vue du calcul des IMGIJ dans
     %un multicouche par la methode des correlations
-    if para.ondktp
+    if para.siDesktop
       waitbarSwitch(0,h,'Calculo de las curvas de dispersion');
     end
     
@@ -226,14 +229,14 @@ if para.espyinv==1
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %% calculo de las posiciones normalizadas de los receptores %
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  if para.ondktp
+  if para.siDesktop
     waitbarSwitch(0.25,h,'Identificacion de las propiedades de los receptores');
   else
     disp('Identificacion de las propiedades de los receptores');
   end
   para = pos_rec(para);
   if para.geo(1)~=3 || (para.geo(1)==3 && para.nmed>1)
-    if para.ondktp
+    if para.siDesktop
       if ~para.smallscreen
         figure(1);plot(para.rec.xr,para.rec.zr,'.b');hold on
       end
@@ -322,7 +325,7 @@ if para.espyinv==1
   % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %
   %                                                                                          %
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  if para.ondktp
+  if para.siDesktop
     waitbarSwitch(0,h,'Calculo de los espectros');
   else
     disp('Calculo de los espectros');
@@ -335,49 +338,44 @@ if para.espyinv==1
 %       disp('      '); disp(j)
 %       tic
 %     if cparll==0
-      if para.ondktp
+      if para.siDesktop
         waitbarSwitch(j/(nf/2),h);
       end
-      str = sprintf('[ %d /100] ',round(j/nf*2*100));
-      lPrompt = 10; 
-      if j==0
+      str = sprintf('[ %d / %d] ',round(j),round(nf/2));
+%       lPrompt = 10; 
+%       if j==0
         disp(str);
-      else
-        [char(8)*ones(1,lStr+lPrompt),str]
-      end
-      lStr = length(str);
-%     else
-%       if dim==1 || (nmed==1 && geo==3)
-%         %para dim==3 vea sol3D_dfv
-%         disp(num2str(j))
-%         if strcmp(version,'8.2.0.701 (R2013b)')
-%           pause(0.5);
-%         end
+%       else
+%         [char(8)*ones(1,lStr+lPrompt),str]
 %       end
-%     end
+%       lStr = length(str);
     
     fj          = j*df + 0.01*df*(j==0) - 1i*DWNomei/2/pi; %disp(['f=',num2str(fj)])
     
-    paratmp     = attenuation(para,fj);
-    paratmp.j   = j;
-    paratmp.fj  = fj;
+    %</ inicio de paratmp
+    para     = attenuation(para,fj);
+    para.j   = j;
+    para.fj  = fj;
     if nmed==1 && geo==1
       %campo incidente solo
       if para.fuente==2 && para.meth_PS==1
         %calculo a partir de las correlaciones y teorema de
         %equiparticion
-        [uw(j+1,:,:,:),sw(j+1,:,:,:)]	= Pure_correlation_equipartition(paratmp,fj);
+        [uw(j+1,:,:,:),sw(j+1,:,:,:)]	= Pure_correlation_equipartition(para,fj);
       else
-        [uw(j+1,:,:,:),sw(j+1,:,:,:)]   = campo_inc(paratmp);
+        [auw,asw]   = campo_inc(para);
+        if max(max(max(auw)))~=0;  uw(j+1,:,:,:)=auw; end
+        if max(max(max(asw)))~=0;  sw(j+1,:,:,:)=asw; end
+        clear auw asw
       end
     elseif nmed==1 && geo==3
       if para.fuente==2 && para.meth_PS==1
         %calculo a partir de las correlaciones y teorema de
         %equiparticion
-        [uw(j+1,:,:,:),sw(j+1,:,:,:)]	= Pure_correlation_equipartition(paratmp,fj);
+        [uw(j+1,:,:,:),sw(j+1,:,:,:)]	= Pure_correlation_equipartition(para,fj);
       else
         %Pure DWN
-        [uw(j+1,:,:,:),UKW0(j+1,:),sw(j+1,:,:,:)]	= Pure_DWN(paratmp,fj);
+        [uw(j+1,:,:,:),UKW0(j+1,:),sw(j+1,:,:,:)]	= Pure_DWN(para,fj);
       end
     else
       %IBEM
@@ -389,9 +387,9 @@ if para.espyinv==1
       % la coordenades de cada fuerza esta dada en coord y estas cambian por
       % cada frecuencia
       if dim==1 %2D
-        [phi_fv,coord,DWNtmp]  = sol_dfv(paratmp,fj,DWN);
+        [phi_fv,coord,DWNtmp]  = sol_dfv(para,fj,DWN);
       elseif dim>=3 %3D
-        [phi_fv,coord,DWNtmp]  = sol3D_dfv(paratmp,fj,DWN,j);
+        [phi_fv,coord,DWNtmp,para]  = sol3D_dfv(para,fj,DWN,j);
       end
       %         [phi_fv1,coord1]  = resample_phi_fv(coord,phi_fv,para,coord0);
       %         plot_phi_fv
@@ -402,15 +400,18 @@ if para.espyinv==1
       %suma de las contribuciones de cada fuente virtual en cada receptor
       if dim==1 && pol==1
         %el cuarto ":" es por la paralelizacion pero en realidad el tamano es uw(j+1,:,:)
-        [uw(j+1,:,:,:),sw(j+1,:,:,:)] 	= inversion_SH_k(paratmp,coord,phi_fv,gaussian,DWNtmp); %uy
+        [uw(j+1,:,:,:),sw(j+1,:,:,:)] 	= inversion_SH_k(para,coord,phi_fv,gaussian,DWNtmp); %uy
       elseif dim==1 && pol==2
         %hay una ecuacion para phix y otra para phiz
-        [uw(j+1,:,:,:),sw(j+1,:,:,:)]	= inversion_PSV_k(paratmp,coord,phi_fv,gaussian,DWNtmp); %u(1)=ux, u(2)=uz
+        [uw(j+1,:,:,:),sw(j+1,:,:,:)]	= inversion_PSV_k(para,coord,phi_fv,gaussian,DWNtmp); %u(1)=ux, u(2)=uz
       else
         %hay una ecuacion para cada uno de phix, phiy y phiz
-        [uw(j+1,:,:,:),sw(j+1,:,:,:)] 	= inversion_3D_k(paratmp,coord,phi_fv,gaussex,DWNtmp); %u(1)=ux,u(2)=uy,u(3)=uz
+        [uw(j+1,:,:,:),sw(j+1,:,:,:)] 	= inversion_3D_k(para,coord,phi_fv,gaussex,DWNtmp); %u(1)=ux,u(2)=uy,u(3)=uz
       end
     end
+    
+    % /> fin de paratmp
+    
     %         if toc(tstart)>1*60
 %     Save_tmp_res(para,uw(j+1,:,:,:),j)
     %         end
@@ -429,7 +430,7 @@ if para.espyinv==1
     %xmax doit etre > vmax*tmax=alpha/dfe
     k2          = (0:(fix(nk0/2)))*DK;
     k2(1)       = k2(2)/1000;
-    if para.ondktp
+    if para.siDesktop
       figure;surf(k2,wj,log(1+1e8*abs(UKW0)));shading flat;view([0 0 1]);
     end
     %         w0=40;
@@ -453,7 +454,7 @@ else %if para.espyinv==0
   para.Ricker_tp	= para0.Ricker_tp;
   para.delais     = para0.delais;
   para.spct       = para0.spct;
-  para.ondktp   	= para0.ondktp;
+  para.siDesktop   	= para0.siDesktop;
 end
 %% variables de salida
 name        = nametmp;
@@ -474,20 +475,20 @@ end
 if para.spct==0
 %   save([name,'tmp'],'para','uw','sw');%por si acaso
   
-  if para.ondktp
+  if para.siDesktop
     waitbarSwitch(0,h,'Inversion de los espectros');
   else
     disp('Inversion de los espectros');
   end
   [utc,stc]   = inversion_w(uw,sw,para);
   
-  if para.ondktp
+  if para.siDesktop
     waitbarSwitch(0,h,'Guardando los resultados ...');
   else
     disp('Guardando los resultados ...');
   end
 else
-  if para.ondktp
+  if para.siDesktop
     waitbarSwitch(0,h,'Guardando los resultados ...');
   else
     disp('Guardando los resultados ...');
@@ -502,13 +503,13 @@ delete([name,'tmp*']);
 %%%%%%%%%%%%%%%%%%%%%%
 %% dibujo resultados %
 %%%%%%%%%%%%%%%%%%%%%%
-if para.ondktp
+if para.siDesktop
   waitbarSwitch(0,h,'Dibujando los resultados ...');
 else
   disp('no display of results available');
 end
 para.redraw     = 0;
-if para.ondktp
+if para.siDesktop
   para.b_dib(1).name   = name;
   % b_dib           = dibujo(para,bdessin,utc,uw,stc,sw,cont1,b_dib);
   close(h)
@@ -521,7 +522,7 @@ if para.smallscreen
   if(ishandle(para.bar));set(para.bar,'BackgroundColor',[0 1 0],...
       'string',['calculation time: ',txttime]);end
 else
-  if para.ondktp
+  if para.siDesktop
     msgbox(['calcul time: ',txttime]);
   end
 end
