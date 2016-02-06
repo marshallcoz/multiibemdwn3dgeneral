@@ -15,6 +15,15 @@ function [RESULT,para] = batch_runFromFiles
 clear para
 thisDir = pwd; disp(['at: ' thisDir])
 load('../out/init_Gij3Dlayers.mat')
+
+% ajustar variables dependientes del sistema
+      [pathstr1,pathstr2,~] = fileparts(pwd);
+      [~,name,ext] = fileparts(para.name);
+      para.name = [pathstr1,pathstr1(1),pathstr2,pathstr1(1),name,ext];
+      para.nametmp = para.name;
+      para.nomcarpeta = pwd;
+      para.nomrep = [pathstr1,pathstr1(1),pathstr2];
+      
 %% Usar modelo de velocidades del archivo
 indat = importdata('../ins/vmodelV2.dat');
 para.nsubmed = size(indat.data,1); % cantidad de estratos + semiespacio
