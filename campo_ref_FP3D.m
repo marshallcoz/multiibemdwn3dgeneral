@@ -33,7 +33,7 @@ if isfield(coord,'vnx')
     Tij(:,:,salt)	= Tij_3D(ks,kp,r(salt),g(:,salt),C,vn(:,salt));
     %###
     ipb=find(r<para.npplo*coord.drxz);
-    
+    %integracion gaussiana donde se requiere
     
     if ~isempty(ipb) && para.dim < 4 % AQUI ESTARÍA BIEN AGREGAR Gij_3D_r_small_FP_GEN
 %         [~,ipb]=min(r);

@@ -1,4 +1,4 @@
-function dibujo_allSpec(para,bouton,RESULT,x,xi,tipolinea)
+function dibujo_allSpec(para,bouton,RESULT,xind,xiind,tipolinea)
 f = gcf;%figure;%(3456);
 set(f,'position',[24  1 1246 726]);
 uw = RESULT.uw;
@@ -9,14 +9,18 @@ nfN = para.nf/2+1;
 cs    =correction_spectre(para,nfN,df);%pour supprimer la convolution temporelle de la source
 
 if nargin > 3
-r = x(4);
+r = xind;
+x = [para.rec.xr(r) para.rec.yr(r) para.rec.zr(r)];
+% r = x(4);
 else
 r = 1;
 x = [para.rec.xr(r) para.rec.yr(r) para.rec.zr(r)];
 end
 
 if nargin > 4
-i = xi(4);
+% i = xi(4);
+i = xiind;
+xi = [para.xs(i) para.ys(i) para.zs(i)];
 else
 i = get(bouton.inc,'value');
 xi = [para.xs(i) para.ys(i) para.zs(i)];

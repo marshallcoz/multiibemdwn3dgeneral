@@ -5,12 +5,12 @@ if para.dim >= 3
 end
 
 set(bouton.recpos   ,'value'    ,para.recpos);
-if para.smallscreen
+% if para.smallscreen
 set(bouton.resatboundary ,'value', para.rec.resatboundary);
 set(bouton.resatboundaryDecimate, 'string', para.rec.resatboundaryDecimate);
 set(bouton.resatboundaryScale, 'string', para.rec.resatboundaryScale);
 set(bouton.resatboundaryScaleMediaRange, 'string',para.rec.resatboundaryScaleMediaRange);
-end
+% end
 set(bouton.xri      ,'string'   ,para.rec.xri);
 set(bouton.dxr      ,'string'   ,para.rec.dxr);
 set(bouton.nrecx    ,'string'   ,para.rec.nrecx);

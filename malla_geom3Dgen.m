@@ -213,11 +213,13 @@ for m=2:para.nmed;
       
       % ".drxy" longitud del arco que describe la geometría axisimétrica
       % ".drxz" distancia entre centros de segmentos discretiación 2D
-      %         Se substituye por el diámetro de un círculo de la misma área:
-      coord.drxz(jj) = 2*sqrt(para.cont(m,1).piece{p}.subdibData.areas(:)/pi);
+      
       % ".dA"   área del segmento 'escudo'.
       %         Se da el área del triángulo
       coord.dA(jj) = para.cont(m,1).piece{p}.subdibData.areas(:);
+      
+      %         Se substituye por el radio de un círculo de la misma área:
+      coord.drxz(jj) = sqrt(coord.dA(jj)/pi);
       
     end
   end

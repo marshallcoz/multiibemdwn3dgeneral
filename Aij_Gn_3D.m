@@ -73,7 +73,8 @@ for m=im
     
     %integracion gaussiana donde se requiere
     if para.dim == 4 % 3Dgeneral
-    jjtmp2              = find((rij<=para.npplo/2*drj).*(rij~=0));
+%     jjtmp2              = find((rij<=para.npplo/2*drj).*(rij~=0));
+    jjtmp2  = find((rij<=1.5*drj).*(rij~=0)); % a menos de 1.5 radios
     ex = false;
     Gij(:,:,jj(jjtmp2)) = Gij_3D_r_smallGEN(coord,[xr,yr,zr],jr(jjtmp2),ksi,kpi,para,Ci,ex);
     

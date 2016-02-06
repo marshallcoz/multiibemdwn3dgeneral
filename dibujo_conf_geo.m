@@ -33,6 +33,9 @@ para    = pos_rec(para);
 xr      = para.rec.xr;
 yr      = para.rec.yr;
 zr      = para.rec.zr;
+xranrec = [min(xr) max(xr)];
+yranrec = [min(yr) max(yr)];
+% zranrec = [min(zr) max(zr)];
 % end
 if nargin == 4
     verRecepotores = get(bouton.verReceptores,'value');
@@ -43,17 +46,20 @@ if verRecepotores
 if para.dim == 4
   colFondo = 'k'; arrcol = ['k','b','r','g','y','m','c','w']; marcador = '.';
   if nargin == 2; marcador = 'none'; end
-  for ip = 1:length(xr)
-    if para.rec.medio(ip) == 1
+  
+  for im = 1:para.nmed
+    ip = find(para.rec.medio==im); 
+    if isempty(ip); continue; end
+    if im == 1
       plot3(axe_conf_geo,xr(ip),yr(ip),zr(ip),...
         ['.' colFondo],'MarkerSize',10,'Marker',marcador)
     else
-    plot3(axe_conf_geo,xr(ip),yr(ip),zr(ip),...
+      plot3(axe_conf_geo,xr(ip),yr(ip),zr(ip),...
       ['.' arrcol(para.cont(para.rec.medio(ip),1).piece{1}.ColorIndex+1)],...
       'MarkerSize',10,'Marker',marcador)
     end
-    view(3)
   end
+  view(3);
 elseif para.dim == 3
   plot3(axe_conf_geo,xr,yr,zr,'.b','MarkerSize',10);view(3)
 else
@@ -127,68 +133,7 @@ else
   axis image
   set(axe_conf_geo, 'XColor', 'k');set(axe_conf_geo, 'YColor', 'k');set(axe_conf_geo, 'ZColor', 'k')
 end
-
-%% background
- Xl = get(axe_conf_geo,'xlim');
- Yl = get(axe_conf_geo,'ylim');
-if para.geo(1)==3 %Medio estratificado DWN
-  % construir vector xp
-  xmin=0; xmax=0;
-  for i=2:para.nmed
-    xmin=min(xmin,para.cont(i,1).xa);
-    xmax=max(xmax,para.cont(i,1).xa+2*para.cont(i,1).a);
-  end
-  xp = linspace(xmin-2,xmax+2,100);
-  
-  % superficie libre
-  zp = 0*xp;
-  if para.dim == 3 % 3Daxisim
-    plot3(axe_conf_geo,xp,xp.*0,zp,'g');
-  elseif para.dim == 4 % 3Dgen
-    if ~isempty(xp)
-        plot3(axe_conf_geo,Xl,[Yl(1) Yl(1)],zp(1:2),'g');
-        plot3(axe_conf_geo,Xl,[Yl(2) Yl(2)],zp(1:2),'g');
-        plot3(axe_conf_geo,[Xl(1) Xl(1)],Yl,zp(1:2),'g');
-        plot3(axe_conf_geo,[Xl(2) Xl(2)],Yl,zp(1:2),'g');
-    end
-  else %2D
-    plot(axe_conf_geo,xp,zp,'g');
-  end
-  
-  % estratos
-  for i=1:para.nsubmed-1
-    xp = linspace(xmin-2,xmax+2,100);
-    zp = zp+para.reg(1).sub(i).h;
-    if para.dim == 3 % 3Daxisim
-      plot3(axe_conf_geo,xp,xp.*0,zp,'g');
-    elseif para.dim == 4 % 3Dgen
-      if ~isempty(xp)
-        plot3(axe_conf_geo,Xl,[Yl(1) Yl(1)],zp(1:2),'g');
-        plot3(axe_conf_geo,Xl,[Yl(2) Yl(2)],zp(1:2),'g');
-        plot3(axe_conf_geo,[Xl(1) Xl(1)],Yl,zp(1:2),'g');
-        plot3(axe_conf_geo,[Xl(2) Xl(2)],Yl,zp(1:2),'g');
-      end
-    else % 2D
-      plot(axe_conf_geo,xp,zp,'g');
-    end
-  end
-else %semiespacio o espacio completo
-  [xp,zp]=visu_courbe_m1(para.geo(1),para.cont(1,1),1000);
-  if para.dim >= 3
-    plot3(axe_conf_geo,xp,xp.*0,zp,'g');
-    if ~isempty(xp)
-    Xl = get(axe_conf_geo,'xlim');
-    Yl = get(axe_conf_geo,'ylim');
-    plot3(axe_conf_geo,Xl,[Yl(1) Yl(1)],zp(1:2),'g');
-    plot3(axe_conf_geo,Xl,[Yl(2) Yl(2)],zp(1:2),'g');
-    plot3(axe_conf_geo,[Xl(1) Xl(1)],Yl,zp(1:2),'g');
-    plot3(axe_conf_geo,[Xl(2) Xl(2)],Yl,zp(1:2),'g');
-    end
-  else
-    plot(axe_conf_geo,xp,zp,'g');
-  end
-end
-
+%% fuente
 if nargin == 4
 iinc=get(bouton.inc,'value');
 gam = str2double(get(bouton.gam,'string')); 
@@ -201,7 +146,6 @@ gam = para.gam(iinc)*pi/180;
 phi = para.phi(iinc)*pi/180;
 end
 
-%% fuente
 %     hcent   = plot(axe_conf_geo,para.xs(iinc),para.zs(iinc),'r.');
 if para.dim >= 3
   hcent   = plot3(axe_conf_geo,para.xs,para.ys,para.zs,'r.');
@@ -291,6 +235,68 @@ else
   ylabel('z')
   zlabel('')
 end
+
+%% background
+ Xl = get(axe_conf_geo,'xlim'); %Xl(1) = min(xranrec(1),Xl(1)); Xl(2) = max(xranrec(2),Xl(2));
+ Yl = get(axe_conf_geo,'ylim'); %Yl(1) = min(yranrec(1),Yl(1)); Yl(2) = max(yranrec(2),Yl(2));
+if para.geo(1)==3 %Medio estratificado DWN
+  % construir vector xp
+  xmin=0; xmax=0;
+  for i=2:para.nmed
+    xmin=min(xmin,para.cont(i,1).xa);
+    xmax=max(xmax,para.cont(i,1).xa+2*para.cont(i,1).a);
+  end
+  xp = linspace(xmin-2,xmax+2,100);
+  
+  % superficie libre
+  zp = 0*xp;
+  if para.dim == 3 % 3Daxisim
+    plot3(axe_conf_geo,xp,xp.*0,zp,'g');
+  elseif para.dim == 4 % 3Dgen
+    if ~isempty(xp)
+        plot3(axe_conf_geo,Xl,[Yl(1) Yl(1)],zp(1:2),'g');
+        plot3(axe_conf_geo,Xl,[Yl(2) Yl(2)],zp(1:2),'g');
+        plot3(axe_conf_geo,[Xl(1) Xl(1)],Yl,zp(1:2),'g');
+        plot3(axe_conf_geo,[Xl(2) Xl(2)],Yl,zp(1:2),'g');
+    end
+  else %2D
+    plot(axe_conf_geo,xp,zp,'g');
+  end
+  
+  % estratos
+  for i=1:para.nsubmed-1
+    xp = linspace(xmin-2,xmax+2,100);
+    zp = zp+para.reg(1).sub(i).h;
+    if para.dim == 3 % 3Daxisim
+      plot3(axe_conf_geo,xp,xp.*0,zp,'g');
+    elseif para.dim == 4 % 3Dgen
+      if ~isempty(xp)
+        plot3(axe_conf_geo,Xl,[Yl(1) Yl(1)],zp(1:2),'g');
+        plot3(axe_conf_geo,Xl,[Yl(2) Yl(2)],zp(1:2),'g');
+        plot3(axe_conf_geo,[Xl(1) Xl(1)],Yl,zp(1:2),'g');
+        plot3(axe_conf_geo,[Xl(2) Xl(2)],Yl,zp(1:2),'g');
+      end
+    else % 2D
+      plot(axe_conf_geo,xp,zp,'g');
+    end
+  end
+else %semiespacio o espacio completo
+  [xp,zp]=visu_courbe_m1(para.geo(1),para.cont(1,1),1000);
+  if para.dim >= 3
+    plot3(axe_conf_geo,xp,xp.*0,zp,'g');
+    if ~isempty(xp)
+%     Xl = get(axe_conf_geo,'xlim');
+%     Yl = get(axe_conf_geo,'ylim');
+    plot3(axe_conf_geo,Xl,[Yl(1) Yl(1)],zp(1:2),'g');
+    plot3(axe_conf_geo,Xl,[Yl(2) Yl(2)],zp(1:2),'g');
+    plot3(axe_conf_geo,[Xl(1) Xl(1)],Yl,zp(1:2),'g');
+    plot3(axe_conf_geo,[Xl(2) Xl(2)],Yl,zp(1:2),'g');
+    end
+  else
+    plot(axe_conf_geo,xp,zp,'g');
+  end
+end
+
 hold off
 drawnow update
 end

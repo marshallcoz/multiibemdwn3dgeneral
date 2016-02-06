@@ -5,7 +5,7 @@ nfN     = nf/2+1; %Nyquist
 zerospad= para.zeropad;
 
 tps     = 0:(1/(df*2*(nfN+zerospad))*(2*(nfN+zerospad)/(2*(nfN+zerospad)-2))):1/df;
-tps     = para.delais+tps;
+tps     = para.pulso.b+tps;
 
 para.rec.nrec   = para.rec.nrecx*para.rec.nrecy*para.rec.nrecz;
 nrec    = para.rec.nrec;

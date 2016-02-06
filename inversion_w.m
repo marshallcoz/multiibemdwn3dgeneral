@@ -10,8 +10,8 @@ df      = para.fmax/nfN;
 zeropad = para.zeropad;
 
 tps     = 0:(1/(df*2*(nfN+zeropad))*(2*(nfN+zeropad)/(2*(nfN+zeropad)-2))):1/df;
-if para.pulsotps~=3 
-tps     = para.delais+tps;
+if para.pulso.tipo~=3 % Ricker periodo característico tp
+tps     = para.pulso.b+tps;
 end
 nuw     = size(uw);
 nsw     = size(sw);

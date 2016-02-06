@@ -24,6 +24,7 @@ if exist(fullfile(cd, 'batch.mat'), 'file')
       batch{iCaso,1}.nomrep = [pathstr1,pathstr1(1),pathstr2];
       % correr programa
       % Los para. de cada caso está en batch{:,1}
+      batch{iCaso,1}.espyinv=1;
       [RESULT,batch{iCaso,1}] = calculo(batch{iCaso,1});
       batch{iCaso,2} = RESULT;
       txnm = ['RESULT_' num2str(iCaso) '.mat'];

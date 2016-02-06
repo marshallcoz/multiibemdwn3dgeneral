@@ -29,7 +29,7 @@ nfN     = nf/2+1; %Nyquist
 zerospad= para.zeropad;
 tps     = 0:(1/(df*2*(nfN+zerospad))*...
   (2*(nfN+zerospad)/(2*(nfN+zerospad)-2))):1/df;
-tps     = para.delais+tps;
+tps     = para.pulso.b+tps;
 
 [n1,n2,n3,n4]=size(utc);
 nt=n1;

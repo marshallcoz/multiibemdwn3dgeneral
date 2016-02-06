@@ -75,10 +75,14 @@ for m=im;
     tij(:,:,jjphi)=Tij_3D(ksi,kpi,rij,g,Ci,vn);
     
     %integracion gaussiana donde se requiere
-    jjtmp2  = find((rij<para.npplo/2*drj).*(rij~=0));
     if para.dim == 4 % 3Dgeneral
+    jjtmp2  = find((rij<=1.5*drj).*(rij~=0)); % a menos de 1.5 radios
+    if i == 4
+      disp(i)
+    end
     tij(:,:,jj(jjtmp2)) = Tij_3D_r_smallGEN(coord,i,jr(jjtmp2),ksi,kpi,para,Ci);
     else %3D axisimétrico
+    jjtmp2  = find((rij<para.npplo/2*drj).*(rij~=0));
     tij(:,:,jj(jjtmp2)) = Tij_3D_r_small(coord,i,jr(jjtmp2),ksi,kpi,gaussian,Ci);
     end
     for i0=1:3

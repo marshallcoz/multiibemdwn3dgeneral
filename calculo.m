@@ -36,17 +36,26 @@ end
     gaussex=gaussian;
   elseif para.dim == 4 % 3D gen
     % variable  para.cubature  por renglones: [coordSimplex1 coordSimplex2 W]
-
-    cmd_setCubatureTriangle16p;
+    
+    % para rij == 0
+    % (los siguientes esquemas de cubatura no incluyen el centroide)
+%     cmd_setCubatureTriangle6p;
+     cmd_setCubatureTriangle7p;
+%     cmd_setCubatureTriangle12p;
     para.cubatureex = para.cubature;
     para.gaussian.ngauex = para.gaussian.ngau;
     
-    cmd_setCubatureTriangle7p;
-    
-    %     cmd_setCubatureTriangle4p;
-    %     cmd_setCubatureTriangle24p;
+    % para rij ~= 0
+%     cmd_setCubatureTriangle4p;
+%      cmd_setCubatureTriangle7p;
+%      cmd_setCubatureTriangle16p;
+%      cmd_setCubatureTriangle24p;
     gaussex = para.gaussian;
     para.gaussex = gaussex;
+    
+    ngau        = 11;
+    gaussian       = Gauss_Legendre(ngau);
+    para.gaussian  = gaussian;
   else % P-SV y 3D axi
     ngau        = 21;
     gaussex  	= Gauss_Legendre(ngau);
@@ -79,7 +88,7 @@ para.df = para.fmax/(nf/2);     %paso en frecuencia
 df      = para.df;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% calculo de los espectros e inversion %
+% calculo de los espectros e inversion %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if para.espyinv==1
   %% discretización inicial de la geometría 2D
@@ -166,7 +175,8 @@ if para.espyinv==1
         para.xs(1:para.ninc),...
         para.ys(1:para.ninc),...
         para.zs(1:para.ninc),para);
-      disp(['La fuente está en el medio ' num2str(para.xzs)])
+      disp('Medio de en el que está cada fuente:')
+      disp(para.xzs.')
     end
   end
   %%%%%%%%%%%%%%%%%%%%%%%%
@@ -184,7 +194,7 @@ if para.espyinv==1
     j               = 0:nf/2;
     wi              = 2*pi*(j*df + 0.01*df*(j==0));
     %         tic;[vg,f1,ikmax2]   = dispersion_curve_wfix_Haskel_4inv_adapt(para,wi);toc
-    [vg,~,f1,ikmax,kx]=dispersion_curve_VP_wfix_Haskel_4inv_u2d2(para,wi)
+    [vg,~,f1,ikmax,kx]=dispersion_curve_VP_wfix_Haskel_4inv_u2d2(para,wi);
     
     para.mode.w0    = f1*2*pi;
     para.mode.k2    = kx;
@@ -235,13 +245,13 @@ if para.espyinv==1
     disp('Identificacion de las propiedades de los receptores');
   end
   para = pos_rec(para);
-  if para.geo(1)~=3 || (para.geo(1)==3 && para.nmed>1)
-    if para.siDesktop
-      if ~para.smallscreen
-        figure(1);plot(para.rec.xr,para.rec.zr,'.b');hold on
-      end
-    end
-  end
+%   if para.geo(1)~=3 || (para.geo(1)==3 && para.nmed>1)
+%     if para.siDesktop
+%       if ~para.smallscreen
+%         figure(1);plot(para.rec.xr,para.rec.zr,'.b');hold on
+%       end
+%     end
+%   end
   
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %% init variable de salida %
@@ -270,6 +280,7 @@ if para.espyinv==1
   end
   inds(inds==0)   = [];
   DWN.inds        = inds;
+  
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %% inicialisacion campos incidente DWN %
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -334,13 +345,14 @@ if para.espyinv==1
   nmed    =para.nmed;
   pol     =para.pol;
   dim     =para.dim;
-  for j=0:nf/2
+  parfor (j=0:nf/2,10)
+    coord = j;    phi_fv = j;    DWNtmp = j; % variables tipo temporal
 %       disp('      '); disp(j)
 %       tic
 %     if cparll==0
-      if para.siDesktop
-        waitbarSwitch(j/(nf/2),h);
-      end
+%       if para.siDesktop
+%         waitbarSwitch(j/(nf/2),h);
+%       end
       str = sprintf('[ %d / %d] ',round(j),round(nf/2));
 %       lPrompt = 10; 
 %       if j==0
@@ -353,29 +365,30 @@ if para.espyinv==1
     fj          = j*df + 0.01*df*(j==0) - 1i*DWNomei/2/pi; %disp(['f=',num2str(fj)])
     
     %</ inicio de paratmp
-    para     = attenuation(para,fj);
-    para.j   = j;
-    para.fj  = fj;
-    if nmed==1 && geo==1
-      %campo incidente solo
-      if para.fuente==2 && para.meth_PS==1
+    paratmp     = attenuation(para,fj);
+    paratmp.j   = j;
+    paratmp.fj  = fj;
+    if nmed==1 && geo==1 
+      %campo incidente solo en espacio completo
+      if paratmp.fuente==2 && paratmp.meth_PS==1
         %calculo a partir de las correlaciones y teorema de
         %equiparticion
-        [uw(j+1,:,:,:),sw(j+1,:,:,:)]	= Pure_correlation_equipartition(para,fj);
+        [uw(j+1,:,:,:),sw(j+1,:,:,:)]	= Pure_correlation_equipartition(paratmp,fj);
       else
-        [auw,asw]   = campo_inc(para);
+        [auw,asw] = campo_inc(paratmp);
         if max(max(max(auw)))~=0;  uw(j+1,:,:,:)=auw; end
         if max(max(max(asw)))~=0;  sw(j+1,:,:,:)=asw; end
-        clear auw asw
+%         clear auw asw
       end
     elseif nmed==1 && geo==3
-      if para.fuente==2 && para.meth_PS==1
+      % campo incidente sólo en medio estratificado
+      if paratmp.fuente==2 && paratmp.meth_PS==1
         %calculo a partir de las correlaciones y teorema de
         %equiparticion
-        [uw(j+1,:,:,:),sw(j+1,:,:,:)]	= Pure_correlation_equipartition(para,fj);
+        [uw(j+1,:,:,:),sw(j+1,:,:,:)]	= Pure_correlation_equipartition(paratmp,fj);
       else
         %Pure DWN
-        [uw(j+1,:,:,:),UKW0(j+1,:),sw(j+1,:,:,:)]	= Pure_DWN(para,fj);
+        [uw(j+1,:,:,:),UKW0(j+1,:),sw(j+1,:,:,:)]	= Pure_DWN(paratmp,fj);
       end
     else
       %IBEM
@@ -387,9 +400,9 @@ if para.espyinv==1
       % la coordenades de cada fuerza esta dada en coord y estas cambian por
       % cada frecuencia
       if dim==1 %2D
-        [phi_fv,coord,DWNtmp]  = sol_dfv(para,fj,DWN);
+        [phi_fv,coord,DWNtmp]  = sol_dfv(paratmp,fj,DWN);
       elseif dim>=3 %3D
-        [phi_fv,coord,DWNtmp,para]  = sol3D_dfv(para,fj,DWN,j);
+        [phi_fv,coord,DWNtmp,paratmp]  = sol3D_dfv(paratmp,fj,DWN,j);
       end
       %         [phi_fv1,coord1]  = resample_phi_fv(coord,phi_fv,para,coord0);
       %         plot_phi_fv
@@ -400,13 +413,13 @@ if para.espyinv==1
       %suma de las contribuciones de cada fuente virtual en cada receptor
       if dim==1 && pol==1
         %el cuarto ":" es por la paralelizacion pero en realidad el tamano es uw(j+1,:,:)
-        [uw(j+1,:,:,:),sw(j+1,:,:,:)] 	= inversion_SH_k(para,coord,phi_fv,gaussian,DWNtmp); %uy
+        [uw(j+1,:,:,:),sw(j+1,:,:,:)] 	= inversion_SH_k(paratmp,coord,phi_fv,gaussian,DWNtmp); %uy
       elseif dim==1 && pol==2
         %hay una ecuacion para phix y otra para phiz
-        [uw(j+1,:,:,:),sw(j+1,:,:,:)]	= inversion_PSV_k(para,coord,phi_fv,gaussian,DWNtmp); %u(1)=ux, u(2)=uz
+        [uw(j+1,:,:,:),sw(j+1,:,:,:)]	= inversion_PSV_k(paratmp,coord,phi_fv,gaussian,DWNtmp); %u(1)=ux, u(2)=uz
       else
         %hay una ecuacion para cada uno de phix, phiy y phiz
-        [uw(j+1,:,:,:),sw(j+1,:,:,:)] 	= inversion_3D_k(para,coord,phi_fv,gaussex,DWNtmp); %u(1)=ux,u(2)=uy,u(3)=uz
+        [uw(j+1,:,:,:),sw(j+1,:,:,:)] 	= inversion_3D_k(paratmp,coord,phi_fv,gaussex,DWNtmp); %u(1)=ux,u(2)=uy,u(3)=uz
       end
     end
     
@@ -415,12 +428,12 @@ if para.espyinv==1
     %         if toc(tstart)>1*60
 %     Save_tmp_res(para,uw(j+1,:,:,:),j)
     %         end
-  end
+  end % end for
   uw(isnan(uw))=0;
   sw(isnan(sw))=0;
   
   %dibujo espectro k-w del DWN
-  if para.nmed==1 && para.geo(1)==3 &&  para.DWNnbptkx/2+1<=para.nkmaxKW && para.dim==1
+  if para.nmed==1 && para.geo(1)==3 && para.dim==1 % &&  para.DWNnbptkx/2+1<=para.nkmaxKW 
     %     if para.DWNnbptkx<=1000 && para.dim==1
     j           = 0:nf/2;
     wj          = 2*pi*(j*df + 0.01*df*(j==0));
@@ -431,7 +444,7 @@ if para.espyinv==1
     k2          = (0:(fix(nk0/2)))*DK;
     k2(1)       = k2(2)/1000;
     if para.siDesktop
-      figure;surf(k2,wj,log(1+1e8*abs(UKW0)));shading flat;view([0 0 1]);
+      figure(837);surf(k2,wj,log(1+1e8*abs(UKW0)));shading flat;view([0 0 1]);
     end
     %         w0=40;
     %         indk2s=find(k2>w0/2,1,'first');
@@ -450,10 +463,11 @@ else %if para.espyinv==0
   if exist('sw','var')
     sw(isnan(sw))   = 0; %#ok<NODEF>
   end
-  para.pulsotps 	= para0.pulsotps ;
-  para.Ricker_tp	= para0.Ricker_tp;
-  para.delais     = para0.delais;
-  para.spct       = para0.spct;
+  para.pulso.tipo 	= para0.pulso.tipo ;
+  para.pulso.a	= para0.pulso.a;
+  para.pulso.b  = para0.pulso.b;
+  para.pulso.c  = para0.pulso.c;
+  para.spct     = para0.spct;
   para.siDesktop   	= para0.siDesktop;
 end
 %% variables de salida
@@ -518,14 +532,14 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 %% tiempo de computo %
 %%%%%%%%%%%%%%%%%%%%%%
-if para.smallscreen
+% if para.smallscreen
   if(ishandle(para.bar));set(para.bar,'BackgroundColor',[0 1 0],...
       'string',['calculation time: ',txttime]);end
-else
-  if para.siDesktop
-    msgbox(['calcul time: ',txttime]);
-  end
-end
+% else
+%   if para.siDesktop
+%     msgbox(['calcul time: ',txttime]);
+%   end
+% end
 disp(['calcul time: ',txttime]);
 % paraLastCalc = para;
 

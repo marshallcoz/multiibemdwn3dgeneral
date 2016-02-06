@@ -9,7 +9,7 @@ df      = para.fmax/(para.nf/2);     %paso en frecuencia
 nf      = para.nf;
 nfN     = nf/2+1; %Nyquist
 tps     = 0:(1/(df*2*(nfN+zerospad))*(2*(nfN+zerospad)/(2*(nfN+zerospad)-2))):1/df;
-tps     = para.delais+tps;
+tps     = para.pulso.b+tps;
 tps     = para.ta*tps;
 
 

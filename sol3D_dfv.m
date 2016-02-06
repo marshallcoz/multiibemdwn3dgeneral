@@ -13,7 +13,7 @@ elseif para.dim == 4% 3D goemetría general
   coord = para.coord;
 end
 
-if para.GraficarCadaDiscretizacion
+if para.GraficarCadaDiscretizacion % a cada frecuencia
   figure(100);cla
   dibujo_conf_geo(para,gca)
   hold on
@@ -54,6 +54,13 @@ if para.GraficarCadaDiscretizacion
   %   close(hf)
   %   cd ../../multi-dwn-ibem.matlab
 end
+
+% % % Para cuando nos queremos saltar el ibem:
+% % nbeq    = coord.nbeq;
+% % nbeq2   = 3*nbeq;
+% % phi_fv =zeros(nbeq2,para.ninc);
+% % warning('debug skip');
+% % return
 
 %el dr varia en funcion de la velocidad y el dA en funcion de v^2
 nbeq    = coord.nbeq;
@@ -107,13 +114,19 @@ if para.geo(1)==3
   %     DWN.dkr(1)  = DWN.kr(2)-DWN.dkr(2)/2;
   %     DWN         = calcul_A_DWN_3D_polar_Ncapas_HS(para,DWN);
   % inversion de las matrices
-  for i=1:length(DWN.kr)
+  
+  notInvA = DWN.A_DWN;
+  notInvB = DWN.B_DWN;
+  parfor i=1:length(DWN.kr)
     %       disp(['****', num2str(i), '****']);
-    DWN.A_DWN(:,:,i)=inv(DWN.A_DWN(:,:,i));
+    invA(:,:,i)=inv(notInvA(:,:,i));
     %       disp('A');
-    DWN.B_DWN(:,:,i)=inv(DWN.B_DWN(:,:,i));
+    invB(:,:,i)=inv(notInvB(:,:,i));
     %       disp('B'); disp('');
   end
+  DWN.A_DWN = invA;
+  DWN.B_DWN = invB;
+  clear notInvA notInvB invA invB
   
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % identificacion de los puntos en los cuales se tiene que calcular DWN -parte 2 %
@@ -220,46 +233,89 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %% matriz de coeficientes %
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-% tic
-% spmd
-% codist = codistributor('1d',1);
-A   = zeros(nbeq2,nbeq2);
 
-parfor i=1:coord.nbpt
-  % cada Worker inicializa AijxT...
-  [AijxT(i,:),AijyT(i,:),AijzT(i,:)]= Aij_Tn_3D(i,coord,para);
-  if sum(coord.Xim(i,:)~=0)==2
-    [AijxG(i,:),AijyG(i,:),AijzG(i,:)]= Aij_Gn_3D(i,coord,para);
-  end
-end
-% str = toc; disp(['Elapsed time is ', num2str(str), ' seconds. : Calculate Aij_']); tic
-%en el caso del IBEM-DWN, se rellena solo una parte de la matrice, la que
-%corresponde al interior de los contornos diferente del multi-estratos
+
+% Elementos de la matriz correspondientes a regiones homogéneas:
+A     = zeros(nbeq2,nbeq2);
+% figure(192);
 for i=1:coord.nbpt
-  %si Xi pertenece a un solo medio, entonces solo se considera la
-  %ecuacion de esfuerzos en superficie libre
-  %sino se considera la continuidad de los esfuerzos normales y de los
-  %desplazamientos
-  %     [Aijx,Aijy,Aijz]=Aij_Tn_3D(i,coord,para);
-  %continuidad tx
-  A(i,:)        = AijxT(i,:);% Aijx
-  %continuidad ty
-  A(i+nbeq,:)   = AijyT(i,:); %Aijy
-  %continuidad tz
-  A(i+2*nbeq,:) = AijzT(i,:); %Aijz
-  if sum(coord.Xim(i,:)~=0)==2
-    %         [Aijx,Aijy,Aijz]        = Aij_Gn_3D(i,coord,para);
-    %continuidad ux
-    A(ju(i)+nbpt,:)       = AijxG(i,:);% Aijx;
-    %continuidad uy
-    A(ju(i)+nbpt+nbeq,:)	= AijyG(i,:);% Aijy;
-    %continuidad uz
-    A(ju(i)+nbpt+2*nbeq,:)= AijzG(i,:);% Aijz;
+  if i==4
+    disp (i)
   end
-end %> i=1:coord.nbpt
-clear AijxT AijyT AijzT AijxG AijyG AijzG
+  [A(i,:),...       %continuidad tx
+   A(i+nbeq,:),...  %continuidad ty
+   A(i+2*nbeq,:)]...%continuidad tz
+   = Aij_Tn_3D(i,coord,para);
+  if sum(coord.Xim(i,:)~=0)==2
+    [A(ju(i)+nbpt,:),...       %continuidad ux
+     A(ju(i)+nbpt+nbeq,:),...  %continuidad uy
+     A(ju(i)+nbpt+2*nbeq,:)]...%continuidad uz
+     = Aij_Gn_3D(i,coord,para);
+  end
+%   figure(192);spy(A);
+end
+%   % si Xi pertenece a un solo medio, entonces solo se considera la
+%   % ecuacion de esfuerzos en superficie libre, si no, se considera
+%   % la continuidad de los esfuerzos normales y desplazamientos.
+% Adirect = A;
+% A     = zeros(nbeq2,nbeq2);
+%   % La matriz se llena para cada receptor (renglón i) a la vez.
+% for i=1:coord.nbpt
+%   A = Aij_Tn_3D_recip(A,nbeq,i,coord,para);
+% %   figure(172);spy(A)
+%   
+% %   if sum(coord.Xim(i,:)~=0)==2
+% %     [A(ju(i)+nbpt,:),...       %continuidad ux
+% %      A(ju(i)+nbpt+nbeq,:),...  %continuidad uy
+% %      A(ju(i)+nbpt+2*nbeq,:)]...%continuidad uz
+% %      = Aij_Gn_3D(i,coord,para);
+% %    figure(172);spy(A)
+% %   end
 % end
-% str = toc; disp(['Elapsed time is ', num2str(str), ' seconds. : Distribute Aij_'])
+%   figure(172);spy(A)
+% Adif = A-Adirect;
+% a = 1:12; b = 11; [a.' A(a,b) Adirect(a,b) Adif(a,b)]
+% a = 11:22; b=4; [a ; A(b,a) ; Adirect(b,a) ; Adif(b,a)]
+
+% A     = zeros(nbeq2,nbeq2);
+% AijxT = zeros(nbeq, nbeq2);
+% AijyT = zeros(nbeq, nbeq2);
+% AijzT = zeros(nbeq, nbeq2);
+% AijxG = zeros(nbeq, nbeq2);
+% AijyG = zeros(nbeq, nbeq2);
+% AijzG = zeros(nbeq, nbeq2);
+% 
+% for i=1:coord.nbpt
+%   [AijxT(i,:),AijyT(i,:),AijzT(i,:)]= Aij_Tn_3D(i,coord,para);
+%   if sum(coord.Xim(i,:)~=0)==2
+%     [AijxG(i,:),AijyG(i,:),AijzG(i,:)]= Aij_Gn_3D(i,coord,para);
+%   end
+% end
+% 
+% for i=1:coord.nbpt
+%   %si Xi pertenece a un solo medio, entonces solo se considera la
+%   %ecuacion de esfuerzos en superficie libre
+%   %sino se considera la continuidad de los esfuerzos normales y de los
+%   %desplazamientos
+%   %     [Aijx,Aijy,Aijz]=Aij_Tn_3D(i,coord,para);
+%   %continuidad tx
+%   A(i,:)        = AijxT(i,:);% Aijx
+%   %continuidad ty
+%   A(i+nbeq,:)   = AijyT(i,:); %Aijy
+%   %continuidad tz
+%   A(i+2*nbeq,:) = AijzT(i,:); %Aijz
+%   if sum(coord.Xim(i,:)~=0)==2
+%     %         [Aijx,Aijy,Aijz]        = Aij_Gn_3D(i,coord,para);
+%     %continuidad ux
+%     A(ju(i)+nbpt,:)       = AijxG(i,:);% Aijx;
+%     %continuidad uy
+%     A(ju(i)+nbpt+nbeq,:)	= AijyG(i,:);% Aijy;
+%     %continuidad uz
+%     A(ju(i)+nbpt+2*nbeq,:)= AijzG(i,:);% Aijz;
+%   end
+% end
+% clear AijxT AijyT AijzT AijxG AijyG AijzG
+
 if para.geo(1)==3
   %en el caso del IBEM-DWN, es mas ventajoso, rellenar la matrice
   %considerando los phi, es a decir, columna por columna
@@ -325,7 +381,11 @@ if para.geo(1)==3
         coordf.CubPtsex = coord.CubPtsex(:,:,j);
         coordf.CubPts   = coord.CubPts  (:,:,j);
       end
-      [U_f1,S_f1,U_f2,S_f2,U_f3,S_f3] = calcul_US_DWN_3D_polar_Ncapas_HS2(para,rec,salu,sals,coordf,ones(nrec,3),DWN);
+      [U_f1,S_f1,U_f2,S_f2,U_f3,S_f3] = calcul_US_DWN_3D_polar_Ncapas_HS2(...
+                                         para,rec,salu,sals,...
+                                         coordf,...
+                                         ones(nrec,3),...
+                                         DWN);
       
     else % el cálculo para varias fuentes se distribuye
       jDistD = distributed(j);

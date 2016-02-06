@@ -1,10 +1,10 @@
 med     =get(bouton.med,'value');
 
 if para.chggeo==1
-  if para.smallscreen
+%   if para.smallscreen
     para.cont(med,1).piece{info.ThisPiece}.fileName = '';
     para.cont(med,1).piece{info.ThisPiece}.geoFileData = [];
-  end
+%   end
   % Nuevo elemento de geometría. Inicializar variables.
     para.chggeo=0;
     if para.rafraichi==0
@@ -64,13 +64,13 @@ if para.chggeo==1
             para.cont(med,1).xa=-3;
         end
     elseif  para.dim == 4 && med > 1
-      if para.smallscreen
+%       if para.smallscreen
       % inclusión 3D: desde archivo STL
       para.cont(med,1).piece{info.ThisPiece}.fileName = get(bouton.geoFileSelect,'string');
       if ~strcmp(para.cont(med,1).piece{info.ThisPiece}.fileName,'')
         [~,~] = previewSTL(bouton.gfPreview,para.cont(med,1).piece{info.ThisPiece});
       end
-      end
+%       end
     end
 end
 
@@ -188,7 +188,7 @@ if med==1
     set(info.rug   	,'visible',onoff);
     set(info.ruggeo ,'visible',onoff);
     set(bouton.ruggeo,'visible',onoff);
-   if para.smallscreen
+%    if para.smallscreen
     set(bouton.geoFileSelect,'visible','off');
     set(bouton.geoFilePanel,'visible','off');
     set(allchild(bouton.gfPreview),'visible','off')
@@ -207,7 +207,7 @@ if med==1
             set(bouton.rughaut   ,'string',para.cont(1,1).rh);
         end
     end
-   end
+%    end
     set(info.rugbase    ,'visible',onoff);
     set(bouton.rugbase  ,'visible',onoff);
     set(info.rughaut  	,'visible',onoff);

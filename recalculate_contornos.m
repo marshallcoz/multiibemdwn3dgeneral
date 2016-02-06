@@ -4,12 +4,12 @@ para        = intersection(para);
 cont        = para.cont;
 
 if h ~= 0
-if para.smallscreen
+% if para.smallscreen
     set(0, 'currentfigure', 100); cla; hold on
-else
-    figure(1);hold on;
-    set(gca,'ydir','reverse');
-end
+% else
+%     figure(1);hold on;
+%     set(gca,'ydir','reverse');
+% end
 end
 c12         = [1 2];
 testblack   = 0;

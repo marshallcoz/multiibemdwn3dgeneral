@@ -52,8 +52,11 @@ g(2,:)  = yij./rij;
 g(3,:)  = zij./rij;
 
 %integracion gaussiana donde se requiere
+if para.dim == 4 % 3Dgeneral
+jjtmp2  = find((rij<=2.0*drj).*(rij~=0)); % a menos de 1.5 radios  
+else %3D axisimétrico
 jjtmp2  = find(rij<para.npplo/2*drj);
-   
+end
 if sal.Ut==1
     Gij             = Gij_3D(ksi,kpi,rij,g,C,njj);
     if para.dim == 4

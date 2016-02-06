@@ -213,7 +213,7 @@ else
       medio = inclusiontest3G(para.rec.xr,para.rec.yr,para.rec.zr,para);
     end   
 end
-if para.smallscreen
+% if para.smallscreen
 % agregar receptores en los contornos 2D
 para.rec.nresAtBoundary=0;
 if para.rec.resatboundary
@@ -242,7 +242,7 @@ if para.rec.resatboundary
     error('Falta implementar receptores en automático en la frontera 3Dgen')
   end
 end
-end
+% end
 para.rec.medio  = medio;
 para.rec.tipo   = tipo;
 if isfield(para,'nmed0')

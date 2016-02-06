@@ -60,9 +60,10 @@ else
 end
 cmd_inc;
 
-set(bouton.pulsotps ,'value'    ,para.pulsotps);
-set(bouton.Ricker_tp,'string'   ,para.Ricker_tp);
-set(bouton.delais   ,'string'   ,para.delais);
+set(bouton.pulsotps ,'value'    ,para.pulso.tipo);
+set(bouton.Ricker_tp,'string'   ,para.pulso.a);
+set(bouton.delais   ,'string'   ,para.pulso.b);
+set(bouton.GaussSta ,'string'   ,para.pulso.c);
 
 %%%%%%%%%%%%%%%%%%%%%
 % update receptores %

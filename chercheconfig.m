@@ -1,5 +1,6 @@
 tmprep=para.nomrep;
 tmprep1=para.nomcarpeta;
+doit = true;
 if exist([para.nomrep,'/configparatmp.mat'],'file')==2 && pdef==1
     load([para.nomrep,'/configparatmp']);
     rafraichi;
@@ -9,6 +10,7 @@ else
     cd(para.nomcarpeta)
     if isequal(nomrep2,0) || isequal(nomfile2,0)
         helpdlg('entra un archivo de tipo configparatmp.mat','info');
+        doit = false;
     else
         disp([nomrep2,nomfile2])
         load([nomrep2,nomfile2]);
@@ -16,6 +18,7 @@ else
         rafraichi;
     end
 end
+if doit
 para.nomrep=pwd;
 para.nomcarpeta=pwd;
 b_dib(1).name=para.name;
@@ -29,4 +32,5 @@ RESULT.uw=uw;       clear uw
 RESULT.stc=stc;     clear stc
 RESULT.sw=sw;       clear sw
 RESULT.cont1=cont1; clear cont1
+end
 end

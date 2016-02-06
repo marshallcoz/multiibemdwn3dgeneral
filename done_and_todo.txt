@@ -94,13 +94,14 @@ DONE
 2014-11     : IBEM-DWN 3D
 2015-01     : Se cambia la definicion de un solido vacio, solo se considera rho == 0.
 .             Eso permite tomar en cuenta medios fluidos (beta==0)
-2015-09     : Interfaz para pantallas pequeñas main_smallscreen. Receptores en las fronteras 2D. Animación P-SV actualizada (malla y contornos deformables).
+2015-09     : Interfaz para pantallas pequeñas. Receptores en las fronteras 2D. Animación P-SV actualizada (malla y contornos deformables).
 2015-10     : Esfuerzos P-SV.
+2015-12     : IBEM 3D con geometría arbitraria cargada desde archivos STL o lista de archivos STL.
+              Incidencia de ondas planas. Animacion en 3D. comando batch para correr varios modelos en el cluster
+2016-01     : Archivos de geometría desde curvas de nivel.
 
 
 TO DO
-Propagate 2015-09 changes into the noUI mode.
-Script to run multiple benchmark cases.
 Create a matlab toolbox
 Deshechar las variables auxiliares
 

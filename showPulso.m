@@ -7,11 +7,11 @@ nf      = para.nf;
 nfN     = nf/2+1; 
 df      = para.fmax/nfN;
 Fq      = (0:nf/2)*df;
-Tq      = 1./Fq;
+% Tq      = 1./Fq;
 zeropad = para.zeropad;
 tps     = 0:(1/(df*2*(nfN+zeropad))*(2*(nfN+zeropad)/(2*(nfN+zeropad)-2))):1/df;
-if para.pulsotps~=3 
-tps     = para.delais+tps;
+if para.pulso.tipo~=3  % Ricker periodo característico tp
+tps     = para.pulso.b+tps;
 end
 cspectre  = correction_spectre(para,nfN,df);
 signal    = real(1/(2*nf)*ifft([cspectre(1:nfN),zeros(1,2*zeropad+1),conj(cspectre(nfN-1:-1:2))])).*exp(para.DWNomei*tps);

@@ -20,7 +20,7 @@ zerospad= para.zeropad;
 dt = (1/(df*2*(nfN+zerospad))*...
   (2*(nfN+zerospad)/(2*(nfN+zerospad)-2)));
 tps     = 0:dt:1/df;
-tps     = para.delais+tps;
+tps     = para.pulso.b+tps;
 
 % tomamos las características de la vista previa en main:
 [az,el]=view; 
