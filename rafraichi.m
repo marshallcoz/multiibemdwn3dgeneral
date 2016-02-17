@@ -10,7 +10,9 @@ if strcmp(para.nomrep,tmp)==0
     para.nomrep=tmp;
 end
 end
-set(bouton.dim      ,'value'    ,para.dim);
+
+if (ishandle(bouton.dim)); set(bouton.dim      ,'value'    ,para.dim); 
+else warning('Handles to UI are missing'); return; end
 cmd_dim;
 
 set(bouton.nmed     ,'string'   ,para.nmed);
@@ -108,7 +110,7 @@ set(bouton.DWNomei  ,'string',para.DWNomei);
 cmd_DWN;
 clearfield;
 
-dibujo_conf_geo(para,bouton.axe_conf_geo,bouton.axe_estrDWN,bouton);
+dibujo_conf_geo(para,bouton.axe_conf_geo,bouton,bouton.axe_estrDWN);
 
 para.rafraichi = 0;
 

@@ -1,7 +1,7 @@
 %% Parametros del IBEM v0.2
 %%%%%%%%%%%%%%%%%%%%%%
 
-clear; close all
+clear;
 %%
 %calculo normal =0, calculo con equipartition =1
 para.meth_PS=0;
@@ -47,21 +47,24 @@ else
   nomrep=para.nomrep;
 end
 
-h0fig1=figure(100);
+h0fig1=figure(100); clf
 uicg = uipanel('parent',gcf,'Title','Configuracion geometrica','HighlightColor',[1 1 1],...
     'BackgroundColor',c_1,'Position',[.005 .005 .99 .49]);
 para.bar = uicontrol('parent',uicg,'Style','text',...
     'BackgroundColor',[.9 .9 .9],'Units','normalized','Fontsize',14,...
     'position',[0 0 1 .06],'string','');
-cmd_fig_1=['pause(.1);if(ishandle(para.bar));',...
+cmd_fig_1=['if(ishandle(para.bar));',...
 'set(para.bar,''BackgroundColor'',[.9 .9 .9],''string'','''');',...
-'end;rafraichi;'];
+'end'];
+% ';%['pause(.1);if(ishandle(para.bar));',...
+% 'set(para.bar,''BackgroundColor'',[.9 .9 .9],''string'','''');',...
+% 'end;rafraichi;'];
 
 set(h0fig1,...
     'Units','normalized','name','parametros IBEM','color',[0.2 .1 .9], ...
     'position',[0.005 0.01 .51 .9],'WindowButtonDownFcn',cmd_fig_1, ...
-    'numberTitle','off','DockControls','off','MenuBar','none');%,...
-    %'CloseRequestFcn','msgbox(''See you soon!'');closereq');
+    'numberTitle','off','DockControls','off','MenuBar','none',...
+    'CloseRequestFcn','cmd_cerrarCallback; if closeMe; closereq; end');
 
 h0rtDad  = uitabgroup('Parent',h0fig1,...
     'Position',[.005 .5 0.99 0.495],'TabLocation','top');
@@ -440,7 +443,7 @@ info.inc    =uicontrol('parent',uif,'Style','text','BackgroundColor',c_3,...
   'Units','normalized','position',[0.01 0.5 .07 .24],'string','Fuente #:');
 para.strinc ='1';
 bouton.inc  =uicontrol('parent',uif,'Style','popupmenu','BackgroundColor',c_2,...
-  'Units','normalized','position',[0.00 0.25 .11 .23],...
+  'Units','normalized','position',[0.00 0.25 .10 .23],...
     'string',para.strinc,'Callback','cmd_inc;');
 % tipo de onda plana
 para.tipo_onda=1;
@@ -499,7 +502,7 @@ info.ptf    = uicontrol('parent',uif,'Style','text'     ,...
     'position',[0.705 0.65 .25 .3],'string','Amplitude function');
 strpulsotps ={'File (~,t0,~)',...
               'Ricker (tp,t0,~) [duracion total]',...
-              'Ricker (Tp,Ts,~) [Characteristic T]',...
+              'Ricker (Tp,Ts,t0) [Characteristic T]',...
               'Gaussiana (sigm,t0,f_break)',...
               'Dirac (~,t0,~)'};
 para.pulso.tipo   = 3;
@@ -664,12 +667,12 @@ para.sortie.USt = 0;
 % para.sortie.Vz  =0;
 
 %contrainte
-para.sortie.sxx =0;
-para.sortie.syy =0;
-para.sortie.szz =0;
-para.sortie.sxy =0;
-para.sortie.sxz =0;
-para.sortie.syz =0;
+para.sortie.sxx =1;
+para.sortie.syy =1;
+para.sortie.szz =1;
+para.sortie.sxy =1;
+para.sortie.sxz =1;
+para.sortie.syz =1;
 
 % %pression
 % para.sortie.P	=0;
@@ -781,7 +784,7 @@ bouton.DWNomei  = uicontrol('parent',uipc,'Style','edit','BackgroundColor',c_2,'
 
 
 bouton.axe_conf_geo=axes('parent',uicg,'Units','normalized',...
-    'OuterPosition',[0 0 1 1]);
+    'OuterPosition',[0 0 1 1],'ButtonDownFcn','rafraichi');
 % para.han.uicg = uicg;
 % para.han.axe_conf_geo = axe_conf_geo;
 
@@ -893,7 +896,7 @@ uicontrol('parent',bouton.uiwr,'Style','text','BackgroundColor',c_3,'Units','nor
 bouton.bfilmeRangeBt =uicontrol('parent',bouton.uiwr,'Style','edit','BackgroundColor',c_2,'Units','normalized','position',[0.50 0.66 .20 0.08],...
     'string','1:10:800','Callback','cmd_filmeRange;');
 info.filmeRangeTime = uicontrol('parent',bouton.uiwr,'Style','text','BackgroundColor',c_2,'Units','normalized','position',[0.50 0.56 .20 0.08],'string','');
-strfilmstyle = {'style = color','style = grid','style = grid+shadow','Mec. Elem. at boundary'};
+strfilmstyle = {'style = color','style = grid','style = grid+shadow','Quiver Plot'};
 para.film.filmStyle = 1;
 para.film.filmeMecElem = 1;
 para.film.fps = 30;
@@ -901,7 +904,7 @@ para.film.BoundaryWarpRange = '1:end';
 bouton.bfilmeStyleDrop =uicontrol('parent',bouton.uiwr,'Style','popupmenu','BackgroundColor',c_2,'Units','normalized','position',[0.5 0.44 .2 .1],...
     'string',strfilmstyle,'Callback','para.film.filmStyle = get(bouton.bfilmeStyleDrop,''value''); cmd_sel_film_mecElem;');
 bouton.bfilmeRunBt =uicontrol('parent',bouton.uiwr,'Style','pushbutton','BackgroundColor',c_2,'Units','normalized','position',[0.71 0.56 .265 .19], ...
-    'string','Snapshots','Callback','if(exist(''RESULT'',''var''));filmoscopio2(para,RESULT);end;');
+    'string','Snapshots','Callback','if(exist(''RESULT'',''var''));filmoscopio2(para,RESULT,bouton.inc.Value);end;');
 uicontrol('parent',bouton.uiwr,'Style','text','BackgroundColor',c_3,'Units','normalized','position',[0.70 0.46 .08 0.08],...
     'string','FPS:');
 bouton.bfilmeFPS =uicontrol('parent',bouton.uiwr,'Style','edit','BackgroundColor',c_2,'Units','normalized','position',[0.76 0.46 .08 0.08],...
@@ -939,3 +942,4 @@ rafraichi;
 if isempty(gcp('nocreate'))
   parpool
 end
+set(bouton.rafraichiEveryTime,'value',1)

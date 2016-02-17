@@ -1,4 +1,4 @@
-function filmoscopio2(para,RESULT)
+function filmoscopio2(para,RESULT,iinc0)
 utc = RESULT.utc;
 stc = RESULT.stc;
 film = para.film;
@@ -7,7 +7,7 @@ film = para.film;
 %   from receivers on the boundary (The boundary appears deformed)
 %   or both.
 if (para.dim >= 3) 
-  filmoscopio3D(para,utc,stc,film);return
+  filmoscopio3D(para,utc,stc,film,iinc0);return
 end
 filmeRange = film.filmeRange;
 filmStyle    = film.filmStyle;
@@ -36,10 +36,12 @@ nt=n1;
 listinc={'P','S','R'};
 fig=figure('Position', [0, 0, 800, 800],'Color',[1 1 1]);
 set(fig,'DoubleBuffer','on');
-cd ..; cd out
-thisdir = pwd;
-cd ..; cd multi-dwn-ibem.matlab/
-name=[thisdir,thisdir(1),'filmtmp','_000'];
+[parentdir,~] = fileparts(pwd);
+name=[parentdir,parentdir(1),'out',parentdir(1),'filmtmp','_000'];
+% cd ..; cd out
+% thisdir = pwd;
+% cd ..; cd multi-dwn-ibem.matlab/
+% name=[thisdir,thisdir(1),'filmtmp','_000'];
 cont1 = para.cont1;
 
 nresAtBoundary = para.rec.nresAtBoundary;
@@ -72,7 +74,8 @@ if strcmp(nam(1:1),'s')
   filmeMecElem = filmeMecElem - size(utc,4);
   filmeMecElem = min(filmeMecElem,3); %filmeMecElem=1;
 end
-for iinc=1
+
+for iinc=iinc0
   hold off
   % u,v : señal en el rango de tiempo y todos los receptores
   if para.pol==1 % SH

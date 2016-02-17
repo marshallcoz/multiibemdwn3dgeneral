@@ -35,7 +35,7 @@ if para.recpos==1
         set(bouton.nrecy,'visible','off');
     else
         set(info.recy   ,'visible','on');
-        set(bouton.yri  ,'visible','on','callback','para.rec.yri=str2num(get(bouton.yri,''string''));');
+        set(bouton.yri  ,'visible','on');%,'callback','para.rec.yri=str2num(get(bouton.yri,''string''));');
         set(bouton.dyr  ,'visible','on');
         set(bouton.nrecy,'visible','on');
     end
@@ -71,6 +71,7 @@ elseif para.recpos==2
     set(info.irec,'visible','off');
     set(bouton.irec,'visible','off');
     set(bouton.xri  ,'callback','para.rec.xri=str2num(get(bouton.xri,''string''));');
+    set(bouton.yri  ,'callback','para.rec.yri=str2num(get(bouton.yri,''string''));');
     set(bouton.zri  ,'callback','para.rec.zri=str2num(get(bouton.zri,''string''));');
 elseif para.recpos==3
     %posicion libre

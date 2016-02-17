@@ -4,12 +4,14 @@ function spectre=correction_spectre(para,nf,df)
 % correction spectre espace et temps
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 w   = 2*pi*(df*((1:nf)-1));
 %%%%%%%%%%
 % tiempo %
 %%%%%%%%%%
 if para.pulso.tipo==1 % file
+    disp('input file')
+    [a,b] = uigetfile;
+    para.arch_pulso = [b,a];
     dt=(1/(df*2*nf)*(2*nf/(2*nf-2))); % dt simul
     pulsoinput=load(para.arch_pulso);
     dt0=pulsoinput(2,1)-pulsoinput(1,1);
@@ -98,4 +100,6 @@ end
 
 if para.pulso.tipo~=3 
 spectre=spectre.*exp(1i*w*(para.pulso.b));
+elseif para.pulso.tipo == 3
+spectre=spectre.*exp(1i*w*(para.pulso.c));
 end

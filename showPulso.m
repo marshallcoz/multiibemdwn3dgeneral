@@ -3,15 +3,19 @@ function showPulso( para )
 %   La señal se muestra en frecuencia y tiempo así como los valores máximos
 %   calcualdos 
 
-nf      = para.nf;
+nf      = para.nf;           disp(['nf = ',num2str(nf)])
 nfN     = nf/2+1; 
-df      = para.fmax/nfN;
-Fq      = (0:nf/2)*df;
+df      = para.fmax/nfN;     disp(['df = ',num2str(df)])
+Fq      = (0:nf/2)*df;       disp(['Fmx= ',num2str(Fq(end))])
 % Tq      = 1./Fq;
 zeropad = para.zeropad;
 tps     = 0:(1/(df*2*(nfN+zeropad))*(2*(nfN+zeropad)/(2*(nfN+zeropad)-2))):1/df;
+                             disp(['dt = ',num2str(tps(3)-tps(2))])
+                             disp(['tmx= ',num2str(tps(end))])
 if para.pulso.tipo~=3  % Ricker periodo característico tp
 tps     = para.pulso.b+tps;
+else
+tps     = para.pulso.c+tps;
 end
 cspectre  = correction_spectre(para,nfN,df);
 signal    = real(1/(2*nf)*ifft([cspectre(1:nfN),zeros(1,2*zeropad+1),conj(cspectre(nfN-1:-1:2))])).*exp(para.DWNomei*tps);

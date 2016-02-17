@@ -1,5 +1,5 @@
-function dibujo_conf_geo(para,axe_conf_geo,axe_estrDWN,bouton)
-if nargin == 4
+function dibujo_conf_geo(para,axe_conf_geo,bouton,axe_estrDWN)
+if nargin > 2 && isfield(bouton,'rafraichiEveryTime')
    refrescar = get(bouton.rafraichiEveryTime,'value');
 else
    refrescar = 2; 
@@ -10,7 +10,7 @@ if refrescar == 3 % refrescar sólo una vez
 end
 if refrescar == 2
 axes(axe_conf_geo); cla; hold on
-if (nargin == 4); disp('refrescando imagen'); drawnow limitrate; end
+if (nargin > 2); disp('refrescando imagen'); drawnow limitrate; end
 %-----------------------%
 % parametros geometrico %
 %-----------------------%
@@ -37,14 +37,21 @@ xranrec = [min(xr) max(xr)];
 yranrec = [min(yr) max(yr)];
 % zranrec = [min(zr) max(zr)];
 % end
-if nargin == 4
+if nargin > 2 && isfield(bouton,'verReceptores')
     verRecepotores = get(bouton.verReceptores,'value');
 else
     verRecepotores = false;
 end
 if verRecepotores
 if para.dim == 4
-  colFondo = 'k'; arrcol = ['k','b','r','g','y','m','c','w']; marcador = '.';
+  colFondo = 'k'; arrcol = ['k','b','r','g','y','m','c','w']; 
+  if length(xr) > 10
+    marcador = '.';
+    markerTamano = 5;
+  else
+    marcador = '^';
+    markerTamano = 15;
+  end
   if nargin == 2; marcador = 'none'; end
   
   for im = 1:para.nmed
@@ -52,11 +59,11 @@ if para.dim == 4
     if isempty(ip); continue; end
     if im == 1
       plot3(axe_conf_geo,xr(ip),yr(ip),zr(ip),...
-        ['.' colFondo],'MarkerSize',10,'Marker',marcador)
+        ['.' colFondo],'MarkerSize',10,'Marker',marcador,'MarkerSize',markerTamano)
     else
       plot3(axe_conf_geo,xr(ip),yr(ip),zr(ip),...
       ['.' arrcol(para.cont(para.rec.medio(ip),1).piece{1}.ColorIndex+1)],...
-      'MarkerSize',10,'Marker',marcador)
+      'MarkerSize',10,'Marker',marcador,'MarkerSize',markerTamano)
     end
   end
   view(3);
@@ -67,20 +74,20 @@ else
 end
 end
 
-%% contornos
-if nargin == 3; EA = 0.2; elseif nargin == 2; EA = 0.; else EA = 0.5;end
+%% fronteras de la irregularidad
+if nargin == 4; EA = 0.2; elseif nargin == 2; EA = 0.; else EA = 0.5;end
 for m=2:para.nmed
   if para.dim == 4 % 3Dgeneral
     view(3)
     verGeometria = true;
-    if nargin == 4; verGeometria = get(bouton.verGeometria,'value'); end
+    if nargin > 2; verGeometria = get(bouton.verGeometria,'value'); end
     if verGeometria
     for p = 1:para.cont(m,1).NumPieces % para cada pieza del contorno
       if (size(para.cont(m,1).piece{p}.fileName,2)>1) % se cargó algo válido
         if size(para.cont(m,1).piece{p}.geoFileData,2)>0 % y hay datos
           % de archivo STL
           thisGF = para.cont(m,1).piece{p}.geoFileData;
-          if nargin == 4;
+          if nargin > 2;
           if ~get(bouton.verNormales,'value'); thisGF = rmfield(thisGF,'N'); end
           else
               thisGF = rmfield(thisGF,'N'); 
@@ -123,7 +130,7 @@ if para.dim ==4
     2*max(get(axe_conf_geo,'ylim')) ...
     2*max(get(axe_conf_geo,'zlim'))],'Style','infinite'); %ambient
   axis tight
-  if ~(nargin == 4); zlim([ -1 max(get(axe_conf_geo,'zlim'))]); end
+  if ~(nargin > 2); zlim([ -1 max(get(axe_conf_geo,'zlim'))]); end
   set(axe_conf_geo, 'XColor', 'r');set(axe_conf_geo, 'YColor', 'g');set(axe_conf_geo, 'ZColor', 'b')
 else
   set(axe_conf_geo,'Projection','orthographic','Box','on');
@@ -134,7 +141,7 @@ else
   set(axe_conf_geo, 'XColor', 'k');set(axe_conf_geo, 'YColor', 'k');set(axe_conf_geo, 'ZColor', 'k')
 end
 %% fuente
-if nargin == 4
+if nargin > 2 && isfield(bouton,'inc')
 iinc=get(bouton.inc,'value');
 gam = str2double(get(bouton.gam,'string')); 
 gam=gam*pi/180;
@@ -148,9 +155,9 @@ end
 
 %     hcent   = plot(axe_conf_geo,para.xs(iinc),para.zs(iinc),'r.');
 if para.dim >= 3
-  hcent   = plot3(axe_conf_geo,para.xs,para.ys,para.zs,'r.');
+  hcent   = plot3(axe_conf_geo,para.xs,para.ys,para.zs,'r.','MarkerSize',20);
 else
-  hcent   = plot(axe_conf_geo,para.xs,para.zs,'r.');
+  hcent   = plot(axe_conf_geo,para.xs,para.zs,'r.','MarkerSize',20);
 end
 
 if para.fuente==1
@@ -225,9 +232,9 @@ end
 if (para.dim >= 3)
   set(axe_conf_geo,'zdir','reverse','dataaspectratio',[1 1 1]);
   axes(axe_conf_geo)
-  xlabel('')
-  ylabel('')
-  xlabel('')
+  xlabel('x')
+  ylabel('y')
+  xlabel('z')
 else
   set(axe_conf_geo,'ydir','reverse','dataaspectratio',[1 1 1]);
   axes(axe_conf_geo)
@@ -237,8 +244,9 @@ else
 end
 
 %% background
- Xl = get(axe_conf_geo,'xlim'); %Xl(1) = min(xranrec(1),Xl(1)); Xl(2) = max(xranrec(2),Xl(2));
- Yl = get(axe_conf_geo,'ylim'); %Yl(1) = min(yranrec(1),Yl(1)); Yl(2) = max(yranrec(2),Yl(2));
+ Xl = get(axe_conf_geo,'xlim'); Xl(1) = min(xranrec(1),Xl(1)); Xl(2) = max(xranrec(2),Xl(2));
+ Yl = get(axe_conf_geo,'ylim'); Yl(1) = min(yranrec(1),Yl(1)); Yl(2) = max(yranrec(2),Yl(2));
+%  Zl = get(axe_conf_geo,'zlim'); Zl(1) = min(zranrec(1),Zl(1)); Zl(2) = max(zranrec(2),Zl(2));
 if para.geo(1)==3 %Medio estratificado DWN
   % construir vector xp
   xmin=0; xmax=0;
@@ -301,7 +309,7 @@ hold off
 drawnow update
 end
 %% Graficar la estratificación
-if nargin >= 3  %Medio estratificado DWN
+if nargin == 4  %Medio estratificado DWN
 if para.geo(1)==3 && ishandle(axe_estrDWN)
   axes(axe_estrDWN); cla
 %   hfigProf = figure(321);

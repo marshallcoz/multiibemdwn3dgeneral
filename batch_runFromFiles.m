@@ -117,7 +117,7 @@ adjacent = [v_real v_imag];
 fwrite(fileID,adjacent,'double');
 fclose(fileID);
 
-disp (['File ' tx 'variable size:']);
+disp (['File ' tx ' variable size:']);
 disp (size(adjacent));
 
 end %iComp

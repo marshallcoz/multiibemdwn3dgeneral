@@ -345,7 +345,7 @@ if para.espyinv==1
   nmed    =para.nmed;
   pol     =para.pol;
   dim     =para.dim;
-  parfor (j=0:nf/2,10)
+  for j=0:nf/2%parfor (j=0:nf/2,10)
     coord = j;    phi_fv = j;    DWNtmp = j; % variables tipo temporal
 %       disp('      '); disp(j)
 %       tic
@@ -353,7 +353,8 @@ if para.espyinv==1
 %       if para.siDesktop
 %         waitbarSwitch(j/(nf/2),h);
 %       end
-      str = sprintf('[ %d / %d] ',round(j),round(nf/2));
+      
+      str = sprintf('[ %d / %d]',round(j),round(nf/2));
 %       lPrompt = 10; 
 %       if j==0
         disp(str);
@@ -482,7 +483,15 @@ if exist('cont1','var')
 else
   cont1=[];
 end
-
+%% Guardar variable en frecuencia
+RESULTADO.uw=uw;
+RESULTADO.sw=sw;
+save(name,'para','uw','sw','cont1');
+  if para.siDesktop
+    waitbarSwitch(0,h,'Resultados en frecuencia guardados en archivo');
+  else
+    disp('Guardado archivo de resultados en frecuencia');
+  end
 %%%%%%%%%%%%%%%%
 %% inversion w %
 %%%%%%%%%%%%%%%%
@@ -511,7 +520,7 @@ else
   stc         = 0;
 end
 txttime     = conv_tps(tstart);
-save(name,'para','utc','uw','stc','sw','cont1','txttime');
+save([name(1:end-4) 't' name(end-4:end)],'para','utc','stc','cont1','txttime');
 delete([name,'tmp*']);
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -541,7 +550,6 @@ end
 %   end
 % end
 disp(['calcul time: ',txttime]);
-% paraLastCalc = para;
 
 %% parpol
 % cparll  = parpool('size');

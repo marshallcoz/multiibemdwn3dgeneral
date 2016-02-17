@@ -24,7 +24,7 @@ for ifig=1:ns0 %numero de campos
     %pour chacune des sorties genérales Ut, UP, US, UI, ou S (hors composantes)
     %(a etendre a sigma, v, def), on cree une figure
     h201(ifig)=figure(200+ifig);
-    
+    clf
     set(h201(ifig),'numbertitle','off');
     
     para.b_dib(ifig).hold0=  uicontrol('Style','popupmenu','BackgroundColor',[0.3 0.8 1],'Units','normalized','position',[0.01 0.32 .07 .05],...

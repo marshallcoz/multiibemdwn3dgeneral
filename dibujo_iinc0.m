@@ -132,9 +132,9 @@ if para.dim < 3
                 couleur=tmpc{itmpc};
                 for i=1:para.rec.nrecx
                     if (wiggle == 2)
-                    plot(para.b_dib(ifig).ht(j),tps,squeeze(varplot(:,i+(k-1)*para.rec.nrecx,iinc,j+(ifig0-1)*fieldV(ifig).nc))/mmax*dxr+xr(i),couleur)
+      plot(para.b_dib(ifig).ht(j),tps,squeeze(varplot(:,i+(k-1)*para.rec.nrecx,iinc,j+(ifig0-1)*fieldV(ifig).nc))/mmax*dxr+xr(i),couleur)
                     else
-                        plotwiggle(para.b_dib(ifig).ht(j),tps,squeeze(varplot(:,i+(k-1)*para.rec.nrecx,iinc,j+(ifig0-1)*fieldV(ifig).nc))/mmax*dxr+xr(i));
+plotwiggle(para.b_dib(ifig).ht(j),tps,squeeze(varplot(:,i+(k-1)*para.rec.nrecx,iinc,j+(ifig0-1)*fieldV(ifig).nc))/mmax*dxr+xr(i));
                     end
                     hold(para.b_dib(ifig).ht(j),'on');
                 end
@@ -143,8 +143,24 @@ if para.dim < 3
     end
 else
     %3D
+    if para.rec.nrecx > 2; mindis = abs(xr(2) - xr(1)); 
+    elseif para.rec.nrecy >2; mindis = abs(yr(2) - yr(1)); 
+    else mindis = abs(zr(2) - zr(1)); 
+    end
     if para.b_dib(1).normalise==1
-        mmax=max(max(max(abs(varplot(it0:it1,:,iinc,:)))));
+      rav=zeros(para.rec.nrecx*para.rec.nrecy*para.rec.nrecz,1);
+      for iz=1:para.rec.nrecz
+        for iy=1:para.rec.nrecy
+          for ix=1:para.rec.nrecx
+            ies = ix+(iy-1)*para.rec.nrecx+(iz-1)*para.rec.nrecx*para.rec.nrecy; 
+  rav(ies) = ((xr(ix)-para.xs(iinc)).^2 + ...
+              (yr(iy)-para.ys(iinc)).^2 + ...
+              (zr(iz)-para.zs(iinc)).^2).^0.5;
+          end
+        end
+      end
+        varplot(it0:it1,rav<mindis*0.2,iinc,:) = NaN;
+        mmax=max(max(max(abs(varplot(it0:it1,rav>=mindis*0.2,iinc,:)))));
         if mmax==0;mmax=1;end
     else
         mmax=1;
@@ -152,14 +168,23 @@ else
     itmpc=mod(coul+iinc-1,length(tmpc));
     if itmpc==0;itmpc=length(tmpc);end
     couleur=tmpc{itmpc};
+    
     for j=1:fieldV(ifig).nc%cada componente
         for iz=1:para.rec.nrecz
             for iy=1:para.rec.nrecy
                 for ix=1:para.rec.nrecx
+                  
+%                   r = ((xr(ix)-para.xs(iinc)).^2 + ...
+%                        (yr(iy)-para.ys(iinc)).^2 + ...
+%                        (zr(iz)-para.zs(iinc)).^2).^0.5;
+%                   if (r(1) < mindis)
+%                     continue
+%                   end
                     if (wiggle == 2)
-                    plot(para.b_dib(ifig).ht(j),tps,squeeze(varplot(:,ix+(iy-1)*para.rec.nrecx+(iz-1)*para.rec.nrecx*para.rec.nrecy,iinc,j))/mmax*dxr+xr(ix+(iy-1)*para.rec.nrecx+(iz-1)*para.rec.nrecx*para.rec.nrecy),couleur)
+      plot(para.b_dib(ifig).ht(j),tps,squeeze(varplot(:,ix+(iy-1)*para.rec.nrecx+(iz-1)*para.rec.nrecx*para.rec.nrecy,iinc,j))/mmax*dxr+xr(ix+(iy-1)*para.rec.nrecx+(iz-1)*para.rec.nrecx*para.rec.nrecy),couleur)
                     else
-                        plotwiggle(para.b_dib(ifig).ht(j),tps,squeeze(varplot(:,ix+(iy-1)*para.rec.nrecx+(iz-1)*para.rec.nrecx*para.rec.nrecy,iinc,j))/mmax*dxr+xr(ix+(iy-1)*para.rec.nrecx+(iz-1)*para.rec.nrecx*para.rec.nrecy));
+plotwiggle(para.b_dib(ifig).ht(j),tps,squeeze(varplot(:,ix+(iy-1)*para.rec.nrecx+(iz-1)*para.rec.nrecx*para.rec.nrecy,iinc,j))...
+        /mmax*dxr+xr(ix+(iy-1)*para.rec.nrecx+(iz-1)*para.rec.nrecx*para.rec.nrecy));
                     end
                     hold(para.b_dib(ifig).ht(j),'on');
                 end
