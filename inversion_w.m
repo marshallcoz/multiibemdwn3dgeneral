@@ -8,11 +8,13 @@ para.df = para.fmax/nfN;
 df      = para.fmax/nfN; 
 
 zeropad = para.zeropad;
+dt      = (1/(df*2*(nfN+zeropad))*(2*(nfN+zeropad)/(2*(nfN+zeropad)-2)));
+tps     = 0:dt:1/df;
+% if para.pulso.tipo~=3 % Ricker periodo característico tp
+% tps     = para.pulso.b+tps;
+% end
+tps     = para.pulso.c+tps;
 
-tps     = 0:(1/(df*2*(nfN+zeropad))*(2*(nfN+zeropad)/(2*(nfN+zeropad)-2))):1/df;
-if para.pulso.tipo~=3 % Ricker periodo característico tp
-tps     = para.pulso.b+tps;
-end
 nuw     = size(uw);
 nsw     = size(sw);
 
@@ -32,7 +34,13 @@ utc     = zeros(nf+1 + 2*zeropad,ntot);
 for i=1:ntot
     tmp     = uw(1:nfN,i).';
     tmp     = tmp.*cspectre;
-    utc(:,i)= real(1/(2*nf)*ifft([tmp(1:nfN),zeros(1,2*zeropad+1),conj(tmp(nfN-1:-1:2))])).*exp(para.DWNomei*tps);
+%     utc(:,i)= real(1/(2*nf)*ifft([tmp(1:nfN),zeros(1,2*zeropad+1),conj(tmp(nfN-1:-1:2))])).*exp(para.DWNomei*tps);
+    utc(:,i)= real(1/(dt)*ifft([tmp(1:nfN),zeros(1,2*zeropad+1),conj(tmp(nfN-1:-1:2))])).*exp(para.DWNomei*tps);
+
+if para.pulso.tipo == 4
+  tp=para.pulso.a;
+  utc(:,i) = utc(:,i) * (tp/pi^.5);
+end
     
 %     nf      = para.nf;
 %     df      = para.fmax/(para.nf/2);     %paso en frecuencia

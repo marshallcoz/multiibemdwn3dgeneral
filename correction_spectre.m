@@ -78,14 +78,28 @@ spectre=spectre(1:nf); % señal en frecuencia
 % %     freq1 = 2*pi*(freq0 + df*((1:nf)-1))+damp;
 % %     spectre=spectre.*(1+3*exp(-2*(pi*freq1/(2*pi)*sigma).^2));
 elseif para.pulso.tipo==4 % plano + tapper gaussiano
-  % para.pulso.a  es aprox. el ancho de la campana de Gauss
-  % sigma está corregido para que el 2(desv. estandard) coincida con .a
-  % se aplica un corrimiento manteniendo plano el espectro hasta .c
-    sigma   = sqrt(para.pulso.a^2/(8*log(2)));
-    freq0   = 0;
-    damp    = 0;
-    freq1   = 2*pi*(freq0 + df*((1:nf)-1))+damp;
-    spectre = exp(-2*(pi*freq1/(2*pi)*sigma).^2);
+  
+  % Definición como Mathiw
+  %   para.pulso.a  es aprox. el ancho de la campana de Gauss
+  %   sigma está corregido para que el 2(desv. estandard) coincida con .a
+%     sigma   = sqrt(para.pulso.a^2/(8*log(2)));
+%     freq0   = 0;
+%     damp    = 0;
+%     freq1   = 2*pi*(freq0 + df*((1:nf)-1))+damp;
+%     spectre = exp(-2*(pi*freq1/(2*pi)*sigma).^2);
+    
+  % Definición formal
+  tp=para.pulso.a;
+  ts=para.pulso.b;
+  fmax = (nf-1) * df;
+  f = linspace(0,fmax,nf);
+  omega_p = 2*pi / tp;
+  omega = 2*pi*f;
+  b = omega / omega_p;
+  factorDeEscala = (tp/pi^.5); % Factor de escala teórico que nos hacía falta
+  spectre =  exp(-b.^2) .* exp(-1i * omega * ts); 
+  
+  % aplica un corrimiento manteniendo plano el espectro hasta .c
     if para.pulso.c > 0
     init = find(w/2/pi > para.pulso.c); 
     if ~isempty(init)
@@ -94,12 +108,22 @@ elseif para.pulso.tipo==4 % plano + tapper gaussiano
     spectre(1:init) = 1;
     end
     end
+  
+disp (['Factor de escala de Fexact = ', num2str(factorDeEscala)])
+% figure (7349); 
+% subplot(2,1,1); hold on
+% plot(f,real(spectre),'r-','DisplayName','F exacta re');
+% plot(f,imag(spectre),'b-','DisplayName','F exacta im');
+% plot(f,abs(spectre),'k-','DisplayName',['F exacta ' num2str(nf)]);
+% xlabel('frecuencia en Hertz')
+% ylabel('Amplitud')
+
 elseif para.pulso.tipo==5 % dirac
     spectre=ones(1,nf);
 end
 
-if para.pulso.tipo~=3 
-spectre=spectre.*exp(1i*w*(para.pulso.b));
-elseif para.pulso.tipo == 3
-spectre=spectre.*exp(1i*w*(para.pulso.c));
-end
+% if para.pulso.tipo~=3 
+% spectre=spectre.*exp(1i*w*(para.pulso.b));
+% elseif para.pulso.tipo == 3
+% spectre=spectre.*exp(1i*w*(para.pulso.c));
+% end

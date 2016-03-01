@@ -48,7 +48,7 @@ for ifig=1:ns0 %numero de campos
         para.b_dib(ifig).inc0  =  uicontrol('Style','popupmenu','BackgroundColor',[0.3 0.8 1],'Units','normalized','position',[0.01 0.12 .07 .05],...
             'string',strinc,'Callback',['ifig=',num2str(ifig),';cmd_dib0_inc(para.b_dib,para,bouton,RESULT.utc,RESULT.uw,RESULT.stc,RESULT.sw);']);
     else
-        set(para.b_dib(ifig).hold0,'Visible','off');
+%         set(para.b_dib(ifig).hold0,'Visible','off');
         para.b_dib(ifig).inc0  = 0;
     end
     %button to chose the wiggle format

@@ -10,16 +10,22 @@ Fq      = (0:nf/2)*df;       disp(['Fmx= ',num2str(Fq(end))])
 % Tq      = 1./Fq;
 zeropad = para.zeropad;
 tps     = 0:(1/(df*2*(nfN+zeropad))*(2*(nfN+zeropad)/(2*(nfN+zeropad)-2))):1/df;
-                             disp(['dt = ',num2str(tps(3)-tps(2))])
+dt      = tps(3)-tps(2);
+                             disp(['dt = ',num2str(dt)])
                              disp(['tmx= ',num2str(tps(end))])
-if para.pulso.tipo~=3  % Ricker periodo característico tp
-tps     = para.pulso.b+tps;
-else
+% if para.pulso.tipo~=3  % Ricker periodo característico tp
+% tps     = para.pulso.b+tps;
+% else
 tps     = para.pulso.c+tps;
-end
+% end
 cspectre  = correction_spectre(para,nfN,df);
-signal    = real(1/(2*nf)*ifft([cspectre(1:nfN),zeros(1,2*zeropad+1),conj(cspectre(nfN-1:-1:2))])).*exp(para.DWNomei*tps);
+% signal    = real(1/(2*nf)*ifft([cspectre(1:nfN),zeros(1,2*zeropad+1),conj(cspectre(nfN-1:-1:2))])).*exp(para.DWNomei*tps);
+signal    = real(1/dt*ifft([cspectre(1:nfN),zeros(1,2*zeropad+1),conj(cspectre(nfN-1:-1:2))])).*exp(para.DWNomei*tps);
 
+if para.pulso.tipo == 4
+  tp=para.pulso.a;
+  signal = signal * (tp/pi^.5);
+end
 % graficar
 figure;
 set(gcf,'name','amplitud del pulso en el origen')

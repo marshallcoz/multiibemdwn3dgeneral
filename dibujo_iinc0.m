@@ -145,7 +145,8 @@ else
     %3D
     if para.rec.nrecx > 2; mindis = abs(xr(2) - xr(1)); 
     elseif para.rec.nrecy >2; mindis = abs(yr(2) - yr(1)); 
-    else mindis = abs(zr(2) - zr(1)); 
+    elseif para.rec.nrecz >2; mindis = abs(zr(2) - zr(1)); 
+    else mindis = 1;
     end
     if para.b_dib(1).normalise==1
       rav=zeros(para.rec.nrecx*para.rec.nrecy*para.rec.nrecz,1);
