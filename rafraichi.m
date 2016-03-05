@@ -104,9 +104,10 @@ set(bouton.fmax     ,'string'   ,para.fmax);
 set(bouton.nf       ,'string'   ,para.nf);
 
 %parametros DWN
-set(bouton.DWNkmax  ,'string',para.DWNkmax);
+% set(bouton.DWNkmax  ,'string',para.DWNkmax);
 set(bouton.DWNnbptkx,'string',para.DWNnbptkx);
-set(bouton.DWNomei  ,'string',para.DWNomei);
+% set(bouton.DWNomei  ,'string',para.DWNomei);
+set(bouton.tmax,'string',para.tmaxinteres);
 cmd_DWN;
 clearfield;
 

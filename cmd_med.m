@@ -129,8 +129,8 @@ if med==1
     
     set(info.DWN,'visible','off');
     set(bouton.nsubmed,'visible','off');
-    set(info.DWNkmax,'visible','off');
-    set(bouton.DWNkmax,'visible','off');
+%     set(info.DWNkmax,'visible','off');
+%     set(bouton.DWNkmax,'visible','off');
     set(info.DWNnbptkx,'visible','off');
     set(bouton.DWNnbptkx,'visible','off');
     set(info.infoDWN,'visible','off');
@@ -155,8 +155,8 @@ if med==1
         onoff='off';
         set(info.DWN,'visible','on');
         set(bouton.nsubmed,'visible','on');
-        set(info.DWNkmax,'visible','on');
-        set(bouton.DWNkmax,'visible','on');
+%         set(info.DWNkmax,'visible','on');
+%         set(bouton.DWNkmax,'visible','on');
         set(info.DWNnbptkx,'visible','on');
         set(bouton.DWNnbptkx,'visible','on');
         set(info.infoDWN,'visible','on');
@@ -297,8 +297,8 @@ else
     
     set(info.DWN,'visible','off');
     set(bouton.nsubmed,'visible','off');
-    set(info.DWNkmax,'visible','off');
-    set(bouton.DWNkmax,'visible','off');
+%     set(info.DWNkmax,'visible','off');
+%     set(bouton.DWNkmax,'visible','off');
     set(info.DWNnbptkx,'visible','off');
     set(bouton.DWNnbptkx,'visible','off');
     set(info.infoDWN,'visible','off');
@@ -311,7 +311,7 @@ end
 if para.rafraichi==0
     cmd_fuente;%pour update des ondes planes possibles si med==1 && para.geo(1)==3
 end
-drawnow
+% drawnow
 
 % clear alpha bet icont lambda mu onoff onoffb onoffc
 % clear onoffd rho strtipo_onda tatt

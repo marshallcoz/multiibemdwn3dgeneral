@@ -234,7 +234,7 @@ if (para.dim >= 3)
   axes(axe_conf_geo)
   xlabel('x')
   ylabel('y')
-  xlabel('z')
+  zlabel('z')
 else
   set(axe_conf_geo,'ydir','reverse','dataaspectratio',[1 1 1]);
   axes(axe_conf_geo)

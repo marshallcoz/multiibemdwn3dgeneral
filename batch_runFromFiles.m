@@ -51,7 +51,7 @@ para.rec.xr= indat(:,1);
 para.rec.yr= indat(:,2);
 para.rec.zr= indat(:,3);
 
-%% Usar fuentes indicadas en archivo
+% Usar fuentes indicadas en archivo
 indat = importdata('../ins/sta.dat'); 
 n = size(indat,1); %40
 para.ninc = n*3; % cantida de fuentes * 3 direcciones

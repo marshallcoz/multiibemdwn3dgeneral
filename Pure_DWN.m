@@ -8,6 +8,9 @@ U = 0; UKW0    = 0; S = 0;
 %1)selon une valeur de l'interface, un kx max pour toutes les fq, OK pour
 %les graph kw
 DK          = 2*para.DWNkmax/nk0;
+
+
+
 if para.DWNnbptkx/2+1>para.nkmaxKW
     %2) un kx max = w/beta min, ok pour SH et slmt partie imaginaire
     DK          = 2*para.reg(1).sub(para.nsubmed).ksi/nk0;
@@ -147,7 +150,7 @@ elseif para.dim>=3
     U       = zeros(3,nr,para.ninc);
     S       = zeros(nss,nr,para.ninc);
     
-    if para.nsubmed==1 && para.reg(1).sub(1).h<0
+    if para.nsubmed==1 && para.reg(1).sub(1).h<0 %espacio completo DWN
         % campo incidente solamente
         coordf.xs       = para.xs; coordr.x = para.rec.xr;
         coordf.ys       = para.ys; coordr.y = para.rec.yr;
@@ -214,11 +217,11 @@ elseif para.dim>=3
         DWN         = calcul_A_DWN_3D_polar_Ncapas_HS(para,DWN);
         
         %aide a utiliser moins de kr
-        DWN         = rebuildk2(DWN);
-        DWN.kr      = DWN.k2;
-        DWN.dkr     = DWN.dk2;
-        DWN.dkr(1)  = DWN.kr(2)-DWN.dkr(2)/2;
-        DWN         = calcul_A_DWN_3D_polar_Ncapas_HS(para,DWN);
+%         DWN         = rebuildk2(DWN);
+%         DWN.kr      = DWN.k2;
+%         DWN.dkr     = DWN.dk2;
+%         DWN.dkr(1)  = DWN.kr(2)-DWN.dkr(2)/2;
+%         DWN         = calcul_A_DWN_3D_polar_Ncapas_HS(para,DWN);
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%
         % inversion de la matrice %

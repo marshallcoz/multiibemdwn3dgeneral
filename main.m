@@ -55,7 +55,7 @@ para.bar = uicontrol('parent',uicg,'Style','text',...
     'position',[0 0 1 .06],'string','');
 cmd_fig_1=['if(ishandle(para.bar));',...
 'set(para.bar,''BackgroundColor'',[.9 .9 .9],''string'','''');',...
-'end'];
+'end;rafraichi;'];
 % ';%['pause(.1);if(ishandle(para.bar));',...
 % 'set(para.bar,''BackgroundColor'',[.9 .9 .9],''string'','''');',...
 % 'end;rafraichi;'];
@@ -390,20 +390,23 @@ bouton.rughaut =uicontrol('parent',uigm,'Style','edit','BackgroundColor',c_2,'Un
 %parametros DWN
 info.DWN       = uicontrol('parent',uigm,'Style','text','BackgroundColor',c_3  ,'Units','normalized','position',[0.1 0.5 .25 .4],'string','parametros DWN');
 
+% Ahora kmax se hace para cada frecuencia 1.5 veces el polo de Rayleigh ó
+% 1/3 de correspondiente a la fmax (lo que de más).
 para.DWNkmax   = 20;%ke
-info.DWNkmax   = uicontrol('parent',uigm,'Style','text','BackgroundColor',c_3  ,'Units','normalized','position',[0.1 0.7 .1 .1],'string','kx max');
-bouton.DWNkmax = uicontrol('parent',uigm,'Style','edit','BackgroundColor',c_2,'Units','normalized','position',[0.1 0.55 .1 .15],...
-    'string',para.DWNkmax,'Callback','para.DWNkmax=str2num(get(bouton.DWNkmax,''string''));cmd_DWN;');
+% info.DWNkmax   = uicontrol('parent',uigm,'Style','text','BackgroundColor',c_3  ,'Units','normalized','position',[0.1 0.7 .1 .1],'string','kx max');
+% bouton.DWNkmax = uicontrol('parent',uigm,'Style','edit','BackgroundColor',c_2,'Units','normalized','position',[0.1 0.55 .1 .15],...
+%     'string',para.DWNkmax,'Callback','para.DWNkmax=str2num(get(bouton.DWNkmax,''string''));cmd_DWN;');
 
 para.DWNnbptkx  = 2000;
 info.DWNnbptkx 	= uicontrol('parent',uigm,'Style','text','BackgroundColor',c_3  ,'Units','normalized','position',[0.25 0.7 .1 .1],'string','nbpt kx');
 bouton.DWNnbptkx= uicontrol('parent',uigm,'Style','edit','BackgroundColor',c_2,'Units','normalized','position',[0.25 0.55 .1 .15],...
     'string',para.DWNnbptkx,'Callback','para.DWNnbptkx=str2num(get(bouton.DWNnbptkx,''string''));cmd_DWN;');
 
-DX              = pi/para.DWNkmax;
-xmax            = DX*para.DWNnbptkx/2;
-DK              = para.DWNkmax/(para.DWNnbptkx*pi);
-strinfoDWN      = {['DX=',num2str(DX,2),'  Xmax=',num2str(xmax,2)];['DK=',num2str(DK,2)]};
+% DX              = pi/para.DWNkmax;
+% xmax            = DX*para.DWNnbptkx/2;
+% DK              = para.DWNkmax/(para.DWNnbptkx*pi);
+% strinfoDWN      = {['DX=',num2str(DX,2),'  Xmax=',num2str(xmax,2)];['DK=',num2str(DK,2)]};
+strinfoDWN = '';
 info.infoDWN 	= uicontrol('parent',uigm,'Style','text','BackgroundColor',c_4  ,'Units','normalized',...
     'position',[0.1 0.26 .25 .27],'string',strinfoDWN);
 info.estrDWN  = uipanel('parent',uigm,'title','Estratificación',...
@@ -502,8 +505,9 @@ info.ptf    = uicontrol('parent',uif,'Style','text'     ,...
     'position',[0.705 0.65 .25 .3],'string','Amplitude function');
 strpulsotps ={'File (~,t0,~)',...
               'Ricker (tp,t0,~) [duracion total]',...
-              'Ricker (Tp,Ts,t0) [Characteristic T]',...
-              'Gaussiana (sigm,t0,f_break)',...
+              'Ricker (tp,ts,t0) [Characteristic T]',...
+              'Gaussiana (tp,ts,f_break)',...
+              'Gaussiana (rt,t0,~)',...
               'Dirac (~,t0,~)'};
 para.pulso.tipo   = 3;
 bouton.pulsotps =uicontrol('parent',uif,'Style','popupmenu',...
@@ -760,18 +764,29 @@ bouton.npplo =uicontrol('parent',uipc,'Style','edit','BackgroundColor',c_2,'Unit
              uicontrol('parent',uipc,'Style','text','BackgroundColor',c_3  ,'Units','normalized','position',[0.21 0.55 .15 .4],'string','Fq max');
 para.fmax	 = 3;
 bouton.fmax  =uicontrol('parent',uipc,'Style','edit','BackgroundColor',c_2,'Units','normalized','position',[0.21 0.05 .15 .4],...
-    'string',para.fmax,'Callback','para.fmax=str2num(get(bouton.fmax,''string''));');
+    'string',para.fmax,'Callback','para.fmax=str2num(get(bouton.fmax,''string'')); cmd_tmax');
 
 % numero de frecuencias en el espectro a calcular
              uicontrol('parent',uipc,'Style','text','BackgroundColor',c_3  ,'Units','normalized','position',[0.41 0.55 .15 .4],'string','N Fq');
 para.nf      = 200;
 bouton.nf    =uicontrol('parent',uipc,'Style','edit','BackgroundColor',c_2,'Units','normalized','position',[0.41 0.05 .15 .4],...
-    'string',para.nf,'Callback','para.nf=str2num(get(bouton.nf,''string''));');
+    'string',para.nf,'Callback','para.nf=str2num(get(bouton.nf,''string'')); cmd_tmax;');
 
+  % ahora DWNomei se estima a partir del la ventana de tiempo de interés
+  % como en Bouchon 2003. Se pregunta la ventana de graficación
 para.DWNomei	= 0.001;
-info.DWNomei 	= uicontrol('parent',uipc,'Style','text','BackgroundColor',c_3  ,'Units','normalized','position',[0.61 0.55 .15 .4],'string','wi');
-bouton.DWNomei  = uicontrol('parent',uipc,'Style','edit','BackgroundColor',c_2,'Units','normalized','position',[0.61 0.05 .15 .4],...
-    'string',para.DWNomei,'Callback','para.DWNomei=str2num(get(bouton.DWNomei,''string''));');
+% info.DWNomei 	= uicontrol('parent',uipc,'Style','text','BackgroundColor',c_3  ,'Units','normalized','position',[0.61 0.55 .15 .4],'string','wi');
+% bouton.DWNomei  = uicontrol('parent',uipc,'Style','edit','BackgroundColor',c_2,'Units','normalized','position',[0.61 0.05 .15 .4],...
+%     'string',para.DWNomei,'Callback','para.DWNomei=str2num(get(bouton.DWNomei,''string''));');
+
+para.tmax = (para.zeropad-1)/(para.fmax/(para.nf/2)*para.zeropad);
+para.tmaxinteres = para.tmax;
+info.tmax = uicontrol('parent',uipc,'Style','text','BackgroundColor',c_3  ,'Units','normalized','position',[0.61 0.55 .15 .4],'string',...
+  {['tmax = ' num2str(para.tmax)];'';'T interes:'});
+
+bouton.tmax  = uicontrol('parent',uipc,'Style','edit','BackgroundColor',c_2,'Units','normalized','position',[0.61 0.05 .15 .4],...
+    'string',para.tmaxinteres,'Callback','para.tmaxinteres=str2num(get(bouton.tmax,''string''));');
+
 
 % para.matfor='fortran';
 % lstmatfor={'matlab','fortran'};

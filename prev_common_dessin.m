@@ -2,10 +2,11 @@ nf      = para.nf;
 df      = para.fmax/(para.nf/2);     %paso en frecuencia
 Fq      = (0:nf/2)*df;
 nfN     = nf/2+1; %Nyquist
-zerospad= para.zeropad;
+% zerospad= para.zeropad;
 
-tps     = 0:(1/(df*2*(nfN+zerospad))*(2*(nfN+zerospad)/(2*(nfN+zerospad)-2))):1/df;
-tps     = para.pulso.b+tps;
+% tps     = 0:(1/(df*2*(nfN+zerospad))*(2*(nfN+zerospad)/(2*(nfN+zerospad)-2))):1/df;
+dt = 1/(df*para.zeropad);    %disp(['dt = ',num2str(dt)])
+tps = (0:para.zeropad-1)*dt; %disp(['tmx= ',num2str(tps(end))])
 
 para.rec.nrec   = para.rec.nrecx*para.rec.nrecy*para.rec.nrecz;
 nrec    = para.rec.nrec;

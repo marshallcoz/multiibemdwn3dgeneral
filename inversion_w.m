@@ -2,18 +2,14 @@ function [utc,stc]=inversion_w(uw,sw,para)
 % utc : desplazamiento en tiempo corregido con la respuesta temporal de la
 %       fuente
 
-nf      = para.nf;
+nf      = para.nf;       disp(['nf = ',num2str(nf)])
 nfN     = nf/2+1; 
-para.df = para.fmax/nfN; 
-df      = para.fmax/nfN; 
-
-zeropad = para.zeropad;
-dt      = (1/(df*2*(nfN+zeropad))*(2*(nfN+zeropad)/(2*(nfN+zeropad)-2)));
-tps     = 0:dt:1/df;
-% if para.pulso.tipo~=3 % Ricker periodo característico tp
-% tps     = para.pulso.b+tps;
-% end
-tps     = para.pulso.c+tps;
+para.df = para.fmax/(nf/2);     %paso en frecuencia
+df      = para.fmax/nfN; disp(['df = ',num2str(df)])
+% zeropad = para.zeropad;
+% tps     = 0:(1/(df*2*(nfN+zeropad))*(2*(nfN+zeropad)/(2*(nfN+zeropad)-2))):1/df;
+dt = 1/(df*para.zeropad);    disp(['dt = ',num2str(dt)])
+tps = (0:para.zeropad-1)*dt; disp(['tmx= ',num2str(tps(end))])
 
 nuw     = size(uw);
 nsw     = size(sw);
@@ -29,28 +25,24 @@ for i=2:length(nuw)
 end
 
 uw      = reshape(uw,nuw(1),ntot);
-utc     = zeros(nf+1 + 2*zeropad,ntot);
+utc     = zeros(para.zeropad,ntot);
 
 for i=1:ntot
     tmp     = uw(1:nfN,i).';
     tmp     = tmp.*cspectre;
-%     utc(:,i)= real(1/(2*nf)*ifft([tmp(1:nfN),zeros(1,2*zeropad+1),conj(tmp(nfN-1:-1:2))])).*exp(para.DWNomei*tps);
-    utc(:,i)= real(1/(dt)*ifft([tmp(1:nfN),zeros(1,2*zeropad+1),conj(tmp(nfN-1:-1:2))])).*exp(para.DWNomei*tps);
-
-if para.pulso.tipo == 4
-  tp=para.pulso.a;
-  utc(:,i) = utc(:,i) * (tp/pi^.5);
+   
+   % crepa:
+   vec = zeros(1,para.zeropad);
+   vec(1:nfN) = tmp(1:nfN); 
+   vec(end-nfN+3:end)=conj(tmp(nfN-1:-1:2));
+   % escala:
+  dt_nopad = 1/df/(nf-1); % dt sin zeropading
+  fac = para.zeropad/nf; % por hacer zeropading
+  a = 128*(df*nfN)/nf; % por frecuencia maxima
+  sca = dt_nopad*fac/(a*nf); % usar el dt sin zeropading
+  utc(:,i)= real(sca*ifft(vec)).*exp(para.DWNomei*tps); % inversa y frec imag
 end
-    
-%     nf      = para.nf;
-%     df      = para.fmax/(para.nf/2);     %paso en frecuencia
-%     Fq      = (0:nf/2)*df;
-%     tmp= fft(real(ifft([tmp(1:nfN),zeros(1,2*zeropad+1),conj(tmp(nfN-1:-1:2))])).*exp(para.DWNomei*tps));
-%     figure(101);subplot(2,1,2);plot(Fq,imag(tmp(1:nf/2+1)),'g','LineWidth',3)
-
-end
-utc  	= reshape(utc,[nf+1 + 2*zeropad,nuw(2:nnuw)]);
-
+utc   = reshape(utc,[para.zeropad,nuw(2:nnuw)]);
 
 ntots=1;
 nnsw=length(nsw);
@@ -58,11 +50,18 @@ for i2=2:length(nsw)
     ntots=ntots*nsw(i2);
 end
 sw      = reshape(sw,nsw(1),ntots);
-stc     = zeros(nf+1 + 2*zeropad,ntots);
+stc     = zeros(para.zeropad,ntot);
 
-parfor i2=1:ntots
-    tmp     = sw(1:nfN,i2).';
-    tmp     = tmp.*cspectre;
-    stc(:,i2)= real(1/(2*nf)*ifft([tmp(1:nfN),zeros(1,2*zeropad+1),conj(tmp(nfN-1:-1:2))])).*exp(para.DWNomei*tps);
+for i2=1:ntots
+  tmp     = sw(1:nfN,i2).';
+  tmp     = tmp.*cspectre;
+  vec = zeros(1,para.zeropad);
+  vec(1:nfN) = tmp(1:nfN); 
+  vec(end-nfN+3:end)=conj(tmp(nfN-1:-1:2));
+  dt_nopad = 1/df/(nf-1); % dt sin zeropading
+  fac = para.zeropad/nf; % por hacer zeropading
+  a = 128*(df*nfN)/nf; % por frecuencia maxima
+  sca = dt_nopad*fac/(a*nf); % usar el dt sin zeropading
+  stc(:,i2)= real(sca*ifft(vec)).*exp(para.DWNomei*tps); % inversa y frec imag
 end
-stc  	= reshape(stc,[nf+1 + 2*zeropad,nsw(2:nnsw)]);
+stc   = reshape(stc,[para.zeropad,nsw(2:nnsw)]);

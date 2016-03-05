@@ -316,8 +316,18 @@ if para.espyinv==1
   else
     DWN=[];
   end
+  para.tmax = (para.zeropad-1)/(para.fmax/(para.nf/2)*para.zeropad);
+  para.tmaxinteres = min(para.tmaxinteres,para.tmax);
+  para.DWNomei = 1.0* pi/para.tmaxinteres; % puende ser 2.0 en lugar de 1.0
   DWNomei = para.DWNomei;
-  if (~isfield(DWN,'U0') && para.geo(1)~=3);DWNomei = 0;end
+  
+  if (~isfield(DWN,'U0') && para.geo(1)~=3)
+    DWNomei = 0;
+  else
+    if para.siDesktop
+      waitbarSwitch(0,h,['omega_i = ' num2str(DWNomei)]);
+    end
+  end
   
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %%  dicretizacion de las superficies con revolucion (axisimetria)  %
@@ -364,6 +374,15 @@ if para.espyinv==1
 %       lStr = length(str);
     
     fj          = j*df + 0.01*df*(j==0) - 1i*DWNomei/2/pi; %disp(['f=',num2str(fj)])
+    
+    % kmax a cada frecuencia
+    if geo == 3
+    minbeta = 100000000000000000000000;
+    for im = 1:para.nsubmed
+    minbeta = min(minbeta,para.reg(1).sub(im).bet);
+    end
+    para.DWNkmax = 0.9*(2*pi*max(0.3*para.fmax,real(fj)))/minbeta * 1.5;
+    end
     
     %</ inicio de paratmp
     paratmp     = attenuation(para,fj);
@@ -526,17 +545,17 @@ delete([name,'tmp*']);
 %%%%%%%%%%%%%%%%%%%%%%
 %% dibujo resultados %
 %%%%%%%%%%%%%%%%%%%%%%
-if para.siDesktop
-  waitbarSwitch(0,h,'Dibujando los resultados ...');
-else
-  disp('no display of results available');
-end
-para.redraw     = 0;
-if para.siDesktop
-  para.b_dib(1).name   = name;
-  % b_dib           = dibujo(para,bdessin,utc,uw,stc,sw,cont1,b_dib);
-  close(h)
-end
+% if para.siDesktop
+%   waitbarSwitch(0,h,'Dibujando los resultados ...');
+% else
+%   disp('no display of results available');
+% end
+% para.redraw     = 0;
+% if para.siDesktop
+%   para.b_dib(1).name   = name;
+%   % b_dib           = dibujo(para,bdessin,utc,uw,stc,sw,cont1,b_dib);
+%   close(h)
+% end
 
 %%%%%%%%%%%%%%%%%%%%%%
 %% tiempo de computo %

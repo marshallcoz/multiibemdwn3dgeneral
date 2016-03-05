@@ -22,6 +22,7 @@ if para.pulso.tipo==1 % file
     end
     cr=fft(inputsignal,2*nf+1);
     spectre=cr(1:nf);
+    spectre=spectre.*exp(1i*w*(para.pulso.c));
 elseif para.pulso.tipo==2 %Ricker duración total de la ondicula
     dt=(1/(df*2*nf)*(nf/(nf-1)));
     tp=0.5*para.pulso.a;
@@ -29,7 +30,7 @@ elseif para.pulso.tipo==2 %Ricker duración total de la ondicula
     cr=2*(2*nf-2)*ifft(0.5*cr);
     spectre=cr(1:nf);
     spectre(1)=0;
-
+    spectre=spectre.*exp(1i*w*(para.pulso.c));
 %     sigma=sqrt(80*para.tps_anchoG^2/(8*log(2)));
 %     freq1 = 2*pi*(freq0 + df*((1:nf)-1))+0*damp;
 %     spectre1=exp(-2*(pi*(freq1-30*df)/(2*pi)*sigma).^2);
@@ -58,6 +59,7 @@ end
 cr = -cr;
 spectre=fft(cr*dt); %forward
 spectre=spectre(1:nf); % señal en frecuencia
+spectre=spectre.*exp(1i*w*(para.pulso.c));
 % if length(para.Ricker_tp) ~= 2
 % w   = 2*pi*(df*((1:nf)-1));
 % spectre=spectre.*exp(1i*w*(1.5*tp));
@@ -96,34 +98,34 @@ elseif para.pulso.tipo==4 % plano + tapper gaussiano
   omega_p = 2*pi / tp;
   omega = 2*pi*f;
   b = omega / omega_p;
-  factorDeEscala = (tp/pi^.5); % Factor de escala teórico que nos hacía falta
+%   factorDeEscala = (tp/pi^.5); % Factor de escala teórico para regresar a
+%   al tiempo y recuperar amplitud máxima 1.0
   spectre =  exp(-b.^2) .* exp(-1i * omega * ts); 
   
   % aplica un corrimiento manteniendo plano el espectro hasta .c
-    if para.pulso.c > 0
+  if para.pulso.c > 0
     init = find(w/2/pi > para.pulso.c); 
     if ~isempty(init)
     init = max(1,init(1));
     spectre = circshift(spectre,init,2);
     spectre(1:init) = 1;
     end
-    end
+  end
   
-disp (['Factor de escala de Fexact = ', num2str(factorDeEscala)])
-% figure (7349); 
-% subplot(2,1,1); hold on
-% plot(f,real(spectre),'r-','DisplayName','F exacta re');
-% plot(f,imag(spectre),'b-','DisplayName','F exacta im');
-% plot(f,abs(spectre),'k-','DisplayName',['F exacta ' num2str(nf)]);
-% xlabel('frecuencia en Hertz')
-% ylabel('Amplitud')
-
-elseif para.pulso.tipo==5 % dirac
+elseif para.pulso.tipo==5 % gaussiano rise time
+  
+  % Definición formal
+  tp=para.pulso.a * pi/4;
+  ts=para.pulso.b;
+  fmax = (nf-1) * df;
+  f = linspace(0,fmax,nf);
+  omega_p = 2*pi / tp;
+  omega = 2*pi*f;
+  b = omega / omega_p;
+%   factorDeEscala = (tp/pi^.5); % Factor de escala teórico que nos hacía falta
+  spectre =  exp(-b.^2) .* exp(-1i * omega * ts); 
+  
+elseif para.pulso.tipo==6 % dirac
     spectre=ones(1,nf);
+    spectre=spectre.*exp(1i*w*(para.pulso.c));
 end
-
-% if para.pulso.tipo~=3 
-% spectre=spectre.*exp(1i*w*(para.pulso.b));
-% elseif para.pulso.tipo == 3
-% spectre=spectre.*exp(1i*w*(para.pulso.c));
-% end
