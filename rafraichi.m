@@ -111,7 +111,7 @@ set(bouton.tmax,'string',para.tmaxinteres);
 cmd_DWN;
 clearfield;
 
-dibujo_conf_geo(para,bouton.axe_conf_geo,bouton,bouton.axe_estrDWN);
+dibujo_conf_geo(para,bouton.axe_conf_geo);
 
 para.rafraichi = 0;
 

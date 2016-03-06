@@ -15,6 +15,8 @@ function [RESULT,para] = batch_runFromFiles
 clear para
 thisDir = pwd; disp(['at: ' thisDir])
 load('../out/init_Gij3Dlayers.mat')
+para.nf  =2048;
+para.fmax = 8;
 
 % ajustar variables dependientes del sistema
       [pathstr1,pathstr2,~] = fileparts(pwd);
@@ -22,8 +24,9 @@ load('../out/init_Gij3Dlayers.mat')
       para.name = [pathstr1,pathstr1(1),pathstr2,pathstr1(1),name,ext];
       para.nametmp = para.name;
       para.nomcarpeta = pwd;
-      para.nomrep = [pathstr1,pathstr1(1),pathstr2];
-      
+      para.nomrep = [pathstr1,pathstr1(1),'out'];
+
+disp('1) Inicializar variables ... done')
 %% Usar modelo de velocidades del archivo
 indat = importdata('../ins/vmodelV2.dat');
 para.nsubmed = size(indat.data,1); % cantidad de estratos + semiespacio
@@ -41,6 +44,7 @@ for i=1:para.nsubmed
 end
 para.reg(1).sub(i).h        = 0; %ultimo estrato=semi espacio
 
+disp('2) Usar modelo de velocidades del archivo ...done')
 %% Usar receptores indicados en archivo
 indat = importdata('../ins/fault.dat');
 nFault = size(indat,1); %130
@@ -50,6 +54,7 @@ para.rec.nrecx= size(indat,1); % cantidad de receptores
 para.rec.xr= indat(:,1);
 para.rec.yr= indat(:,2);
 para.rec.zr= indat(:,3);
+disp('3) Usar receptores indicados en archivo ...done')
 
 % Usar fuentes indicadas en archivo
 indat = importdata('../ins/sta.dat'); 
@@ -73,7 +78,7 @@ para.gam(2*n+1:3*n) = 180;
 para.phi(2*n+1:3*n) = 0;
 
 clear indat i
-
+disp('4) Usar fuentes indicadas en archivo ...done')
 %% Ejecución del análisis
 para.espyinv=1;
 [RESULT,para]=calculo(para);
@@ -85,6 +90,7 @@ para.espyinv=1;
 %              '--------- datos en frecuenica positiva 1:(para.nf/2+1) 
 
 %% Escritura de resultados
+disp('5) Escribiendo archivos binarios')
 % Archivos independientes para cada componente del tensor de esfuerzos y dirección
 txDir = ['x','y','z'];
 txComp={'sxx', 'syy', 'szz', 'sxy', 'sxz', 'syz'};
@@ -139,5 +145,6 @@ fprintf(fileID, [num2str(nFault) '\n']);
 fprintf(fileID, 'Number of Stations (sources):\n');
 fprintf(fileID, [num2str(n) '\n']);
 fclose(fileID);
+disp('done')
 end
 

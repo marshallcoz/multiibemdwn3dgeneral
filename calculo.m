@@ -355,15 +355,9 @@ if para.espyinv==1
   nmed    =para.nmed;
   pol     =para.pol;
   dim     =para.dim;
-  for j=0:nf/2%parfor (j=0:nf/2,10)
-    coord = j;    phi_fv = j;    DWNtmp = j; % variables tipo temporal
-%       disp('      '); disp(j)
-%       tic
-%     if cparll==0
-%       if para.siDesktop
-%         waitbarSwitch(j/(nf/2),h);
-%       end
-      
+%   for j=0:nf/2%
+ parfor (j=0:nf/2,10)
+    coord = j;    phi_fv = j;    DWNtmp = j;
       str = sprintf('[ %d / %d]',round(j),round(nf/2));
 %       lPrompt = 10; 
 %       if j==0
@@ -373,21 +367,22 @@ if para.espyinv==1
 %       end
 %       lStr = length(str);
     
-    fj          = j*df + 0.01*df*(j==0) - 1i*DWNomei/2/pi; %disp(['f=',num2str(fj)])
-    
-    % kmax a cada frecuencia
-    if geo == 3
-    minbeta = 100000000000000000000000;
-    for im = 1:para.nsubmed
-    minbeta = min(minbeta,para.reg(1).sub(im).bet);
-    end
-    para.DWNkmax = 0.9*(2*pi*max(0.3*para.fmax,real(fj)))/minbeta * 1.5;
-    end
+    fj          = j*df + 0.01*df*(j==0) - 1i*DWNomei/2/pi; 
     
     %</ inicio de paratmp
     paratmp     = attenuation(para,fj);
     paratmp.j   = j;
     paratmp.fj  = fj;
+    
+     % kmax a cada frecuencia
+    if geo == 3
+    minbeta = 100000000000000000000000;
+    for im = 1:paratmp.nsubmed
+    minbeta = min(minbeta,paratmp.reg(1).sub(im).bet);
+    end
+    paratmp.DWNkmax = 0.9*(2*pi*max(0.3*paratmp.fmax,real(fj)))/minbeta * 1.5;
+    end
+    
     if nmed==1 && geo==1 
       %campo incidente solo en espacio completo
       if paratmp.fuente==2 && paratmp.meth_PS==1
@@ -507,9 +502,11 @@ RESULTADO.uw=uw;
 RESULTADO.sw=sw;
 save(name,'para','uw','sw','cont1');
   if para.siDesktop
-    waitbarSwitch(0,h,'Resultados en frecuencia guardados en archivo');
+    waitbarSwitch(0,h,'Resultados uw sw para (en frecuencia) guardados en archivo');
+    waitbarSwitch(0,h,name);
   else
-    disp('Guardado archivo de resultados en frecuencia');
+    disp('Resultados uw sw para (en frecuencia) guardados en archivo');
+    dips(name);
   end
 %%%%%%%%%%%%%%%%
 %% inversion w %
@@ -522,6 +519,7 @@ if para.spct==0
   else
     disp('Inversion de los espectros');
   end
+  if para.zeropad < para.nf; para.zeropad = para.nf; end
   [utc,stc]   = inversion_w(uw,sw,para);
   
   if para.siDesktop

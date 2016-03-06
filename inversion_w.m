@@ -1,7 +1,7 @@
 function [utc,stc]=inversion_w(uw,sw,para)
 % utc : desplazamiento en tiempo corregido con la respuesta temporal de la
 %       fuente
-
+if para.zeropad < para.nf; para.zeropad = para.nf; end
 nf      = para.nf;       disp(['nf = ',num2str(nf)])
 nfN     = nf/2+1; 
 para.df = para.fmax/(nf/2);     %paso en frecuencia

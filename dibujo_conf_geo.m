@@ -1,16 +1,24 @@
-function dibujo_conf_geo(para,axe_conf_geo,bouton,axe_estrDWN)
-if nargin > 2 && isfield(bouton,'rafraichiEveryTime')
+function dibujo_conf_geo(para,axe_conf_geo)
+try
+  bouton = evalin('base','bouton');
+catch 
+  bouton = [];
+end
+if isfield(bouton,'rafraichiEveryTime')
    refrescar = get(bouton.rafraichiEveryTime,'value');
 else
    refrescar = 2; 
 end
 if refrescar == 3 % refrescar sólo una vez
-    set(bouton.rafraichiEveryTime,'value',1);
+    if isfield(bouton,'rafraichiEveryTime')
+      set(bouton.rafraichiEveryTime,'value',1);
+    end
     refrescar = 2;
 end
 if refrescar == 2
 axes(axe_conf_geo); cla; hold on
-if (nargin > 2); disp('refrescando imagen'); drawnow limitrate; end
+disp('refrescando imagen'); drawnow limitrate; 
+end
 %-----------------------%
 % parametros geometrico %
 %-----------------------%
@@ -37,7 +45,7 @@ xranrec = [min(xr) max(xr)];
 yranrec = [min(yr) max(yr)];
 % zranrec = [min(zr) max(zr)];
 % end
-if nargin > 2 && isfield(bouton,'verReceptores')
+if isfield(bouton,'verReceptores')
     verRecepotores = get(bouton.verReceptores,'value');
 else
     verRecepotores = false;
@@ -52,7 +60,7 @@ if para.dim == 4
     marcador = '^';
     markerTamano = 15;
   end
-  if nargin == 2; marcador = 'none'; end
+%   if nargin == 2; marcador = 'none'; end
   
   for im = 1:para.nmed
     ip = find(para.rec.medio==im); 
@@ -75,20 +83,27 @@ end
 end
 
 %% fronteras de la irregularidad
-if nargin == 4; EA = 0.2; elseif nargin == 2; EA = 0.; else EA = 0.5;end
+% if nargin == 4; EA = 0.2; elseif nargin == 2; EA = 0.; else EA = 0.5;end
+EA = 0.2;
 for m=2:para.nmed
   if para.dim == 4 % 3Dgeneral
     view(3)
-    verGeometria = true;
-    if nargin > 2; verGeometria = get(bouton.verGeometria,'value'); end
+    if isfield(bouton,'verGeometria')
+      verGeometria = get(bouton.verGeometria,'value'); 
+    else
+      verGeometria = true;
+    end
     if verGeometria
     for p = 1:para.cont(m,1).NumPieces % para cada pieza del contorno
       if (size(para.cont(m,1).piece{p}.fileName,2)>1) % se cargó algo válido
         if size(para.cont(m,1).piece{p}.geoFileData,2)>0 % y hay datos
           % de archivo STL
           thisGF = para.cont(m,1).piece{p}.geoFileData;
-          if nargin > 2;
-          if ~get(bouton.verNormales,'value'); thisGF = rmfield(thisGF,'N'); end
+%           if nargin > 2;
+          if isfield(bouton,'verNormales')
+            if ~get(bouton.verNormales,'value'); 
+              thisGF = rmfield(thisGF,'N'); 
+            end
           else
               thisGF = rmfield(thisGF,'N'); 
           end
@@ -130,7 +145,17 @@ if para.dim ==4
     2*max(get(axe_conf_geo,'ylim')) ...
     2*max(get(axe_conf_geo,'zlim'))],'Style','infinite'); %ambient
   axis tight
-  if ~(nargin > 2); zlim([ -1 max(get(axe_conf_geo,'zlim'))]); end
+  
+  [limx] = xlim; dlimX=limx(2)-limx(1); 
+  [limy] = ylim; dlimY=limy(2)-limy(1); 
+  [limz] = zlim; dlimZ=limz(2)-limz(1);
+  dlimH = min(dlimX,dlimY);
+  if dlimH < 0.3 *dlimZ; dlimH = 0.3 *dlimZ; end
+  xlim([mean(limx)-dlimH*0.5 mean(limx)+dlimH*0.5])
+  ylim([mean(limy)-dlimH*0.5 mean(limy)+dlimH*0.5])
+  
+  
+%   if ~(nargin > 2); zlim([ -1 max(get(axe_conf_geo,'zlim'))]); end
   set(axe_conf_geo, 'XColor', 'r');set(axe_conf_geo, 'YColor', 'g');set(axe_conf_geo, 'ZColor', 'b')
 else
   set(axe_conf_geo,'Projection','orthographic','Box','on');
@@ -141,7 +166,7 @@ else
   set(axe_conf_geo, 'XColor', 'k');set(axe_conf_geo, 'YColor', 'k');set(axe_conf_geo, 'ZColor', 'k')
 end
 %% fuente
-if nargin > 2 && isfield(bouton,'inc')
+if isfield(bouton,'inc')
 iinc=get(bouton.inc,'value');
 gam = str2double(get(bouton.gam,'string')); 
 gam=gam*pi/180;
@@ -155,9 +180,9 @@ end
 
 %     hcent   = plot(axe_conf_geo,para.xs(iinc),para.zs(iinc),'r.');
 if para.dim >= 3
-  hcent   = plot3(axe_conf_geo,para.xs,para.ys,para.zs,'r.','MarkerSize',20);
+  plot3(axe_conf_geo,para.xs,para.ys,para.zs,'r.','MarkerSize',20);
 else
-  hcent   = plot(axe_conf_geo,para.xs,para.zs,'r.','MarkerSize',20);
+  plot(axe_conf_geo,para.xs,para.zs,'r.','MarkerSize',20);
 end
 
 if para.fuente==1
@@ -187,7 +212,7 @@ if para.fuente==1
 elseif  para.fuente==2
   if para.dim==1
     if para.pol==1
-      hcent   = plot(axe_conf_geo,para.xs,para.zs,'ro');
+      plot(axe_conf_geo,para.xs,para.zs,'ro');
     elseif para.pol==2
       rarrow  = 0.4;
       for iinc=1:min(para.ninc,5)
@@ -307,9 +332,15 @@ end
 
 hold off
 drawnow update
-end
+% end
 %% Graficar la estratificación
-if nargin == 4  %Medio estratificado DWN
+% if nargin == 4  %Medio estratificado DWN
+if isfield(bouton,'axe_estrDWN')
+  axe_estrDWN = bouton.axe_estrDWN;
+else
+  figure('Name','Estratificacion');
+  axe_estrDWN = gca;
+end
 if para.geo(1)==3 && ishandle(axe_estrDWN)
   axes(axe_estrDWN); cla
 %   hfigProf = figure(321);
@@ -328,5 +359,5 @@ if para.geo(1)==3 && ishandle(axe_estrDWN)
   clear ParaRegSub ShouldUseAlf
   axes(axe_conf_geo)
 end
-end
+
 end
