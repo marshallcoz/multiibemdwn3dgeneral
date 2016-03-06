@@ -37,9 +37,7 @@ for i=1:ntot
    vec(end-nfN+3:end)=conj(tmp(nfN-1:-1:2));
    % escala:
   dt_nopad = 1/df/(nf-1); % dt sin zeropading
-  fac = para.zeropad/nf; % por hacer zeropading
-  a = 128*(df*nfN)/nf; % por frecuencia maxima
-  sca = dt_nopad*fac/(a*nf); % usar el dt sin zeropading
+  sca = dt_nopad*para.zeropad/nf/nf;
   utc(:,i)= real(sca*ifft(vec)).*exp(para.DWNomei*tps); % inversa y frec imag
 end
 utc   = reshape(utc,[para.zeropad,nuw(2:nnuw)]);
@@ -58,10 +56,9 @@ for i2=1:ntots
   vec = zeros(1,para.zeropad);
   vec(1:nfN) = tmp(1:nfN); 
   vec(end-nfN+3:end)=conj(tmp(nfN-1:-1:2));
+   % escala:
   dt_nopad = 1/df/(nf-1); % dt sin zeropading
-  fac = para.zeropad/nf; % por hacer zeropading
-  a = 128*(df*nfN)/nf; % por frecuencia maxima
-  sca = dt_nopad*fac/(a*nf); % usar el dt sin zeropading
+  sca = dt_nopad*para.zeropad/nf/nf;
   stc(:,i2)= real(sca*ifft(vec)).*exp(para.DWNomei*tps); % inversa y frec imag
 end
 stc   = reshape(stc,[para.zeropad,nsw(2:nnsw)]);
