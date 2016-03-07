@@ -2,6 +2,7 @@ function showPulso( para )
 %showPulso Mostrar la señal del pulso en la fuente
 %   La señal se muestra en frecuencia y tiempo así como los valores máximos
 %   calcualdos 
+if para.zeropad < para.nf; para.zeropad = para.nf; end
 
 nf      = para.nf;           disp(['nf = ',num2str(nf)])
 nfN     = nf/2+1; 
@@ -15,8 +16,6 @@ dt = 1/(df*para.zeropad);    disp(['dt = ',num2str(dt)])
 tps = (0:para.zeropad-1)*dt; disp(['tmx= ',num2str(tps(end))])
 
 cspectre  = correction_spectre(para,nfN,df);
-% signal    = real(1/(2*nf)*ifft([cspectre(1:nfN),zeros(1,2*zeropad+1),conj(cspectre(nfN-1:-1:2))])).*exp(para.DWNomei*tps);
-% signal    = real(1/dt*ifft([cspectre(1:nfN),zeros(1,2*zeropad+1),conj(cspectre(nfN-1:-1:2))])).*exp(para.DWNomei*tps);
 
 % crepa:
 vec = zeros(1,para.zeropad);
@@ -24,10 +23,8 @@ vec(1:nfN) = cspectre(1:nfN);
 vec(end-nfN+3:end)=conj(cspectre(nfN-1:-1:2));
 % escala:
   dt_nopad = 1/df/(nf-1); % dt sin zeropading
-  fac = para.zeropad/nf; % por hacer zeropading
-  a = 128*(df*nfN)/nf; % por frecuencia maxima
-  sca = dt_nopad*fac/(a*nf); % usar el dt sin zeropading
-  signal= real(sca*ifft(vec)).*exp(para.DWNomei*tps); % inversa y frec imag
+  sca = dt_nopad*para.zeropad/nf/nf;
+  signal= real(sca*ifft(vec)); % inversa 
 
 % graficar
 figure;
@@ -64,5 +61,22 @@ plot(tps,real(signal.'),'r');hold on;
 plot(tps,imag(signal.'),'b');
 title('Ondícula')
 xlabel('tiempo en segundos')
+
+if para.pulso.tipo==6 % butterworth
+Ha = abs(cspectre);
+% Hr = real(cspectre);
+% Hi = imag(cspectre);
+Hadb  = 20*log10(Ha/1); % Convert to dB scale
+% Hrdb  = 20*log10(Hr/1); % Convert to dB scale
+% Hidb  = 20*log10(Hi/1); % Convert to dB scale
+figure(3333); hold on
+% plot(Fq, Hrdb,'r-','LineWidth',1)
+% plot(Fq, Hidb,'b-','LineWidth',1)
+plot(Fq, Hadb,'k-','LineWidth',3,'DisplayName',...
+  ['abs n' num2str(para.pulso.a) ' Wn' num2str(para.pulso.b)])
+xlabel('Frequencia (Hertz)')
+ylabel('Magnitud (db)')
+grid on
+end
 end
 

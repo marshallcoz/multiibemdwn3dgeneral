@@ -111,7 +111,6 @@ elseif para.pulso.tipo==4 % plano + tapper gaussiano
     spectre(1:init) = 1;
     end
   end
-  
 elseif para.pulso.tipo==5 % gaussiano rise time
   
   % Definición formal
@@ -124,8 +123,27 @@ elseif para.pulso.tipo==5 % gaussiano rise time
   b = omega / omega_p;
 %   factorDeEscala = (tp/pi^.5); % Factor de escala teórico que nos hacía falta
   spectre =  exp(-b.^2) .* exp(-1i * omega * ts); 
-  
-elseif para.pulso.tipo==6 % dirac
+elseif para.pulso.tipo==6 % butterworth
+  n =para.pulso.a;
+  Wn=para.pulso.b;
+  [b,a]=butter(n,Wn);
+  nf      = para.nf;
+  nfN     = nf/2+1;
+  N = nfN;
+  w = linspace(0, pi, N+1); w(end) = [];
+  ze = exp(-1j*w); % Pre-compute exponent
+  spectre = polyval(b, ze)./polyval(a, ze); % Evaluate transfer function
+  spectre = reshape(spectre,1,nfN);
+  df      = para.fmax/nfN;     disp(['df = ',num2str(df)])
+  f      = (0:nf/2)*df;
+  omega = 2*pi*f;
+  spectre = spectre .*  exp(-1i * omega * para.pulso.c);
+%   Ha = abs(H);
+%   Hr = real(H);
+%   Hi = imag(H);  
+   figure(42415)
+   freqz(b,a)
+elseif para.pulso.tipo==7 % dirac
     spectre=ones(1,nf);
     spectre=spectre.*exp(1i*w*(para.pulso.c));
 end
