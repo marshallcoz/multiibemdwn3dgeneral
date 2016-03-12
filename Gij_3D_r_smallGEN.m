@@ -21,15 +21,15 @@ Gij     = zeros(3,3,nj);        % El resultado
 % Para cada fuente virtual se integre de todos los puntos
 for iXi = 1:size(jjpb,2)
   % coordenadas y pesos de los putnos de la cubatura
-  if ex
-  ngau    = para.gaussian.ngauex;% cantidad de puntos gaussianos por fuente
-  CubPts = coord.CubPtsex(1:3,1:ngau,jjpb(iXi));
-  CubWts = para.cubatureex(1:ngau,3);
-  else
+%   if ex
+%   ngau    = para.gaussian.ngauex;% cantidad de puntos gaussianos por fuente
+%   CubPts = coord.CubPtsex(1:3,1:ngau,jjpb(iXi));
+%   CubWts = para.cubatureex(1:ngau,3);
+%   else
   ngau    = para.gaussian.ngau;% cantidad de puntos gaussianos por fuente
   CubPts = coord.CubPts(1:3,1:ngau,jjpb(iXi));
   CubWts = para.cubature(1:ngau,3);
-  end
+%   end
   % cosenos directores entre el receptor y las fuentes
   xij = xr(1)-CubPts(1,:);
   yij = xr(2)-CubPts(2,:);

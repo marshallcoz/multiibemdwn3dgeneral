@@ -31,8 +31,9 @@ A_DWN       = DWN.A_DWN; %matrices ya inversada
 B_DWN       = DWN.B_DWN;
 
 gaussian       = para.gaussian;
+if para.dim == 3
 gaussex     = para.gaussex;
-
+end
 MAT         = para.reg(1).sub;
 DK          = DWN.dkr;
 
@@ -730,13 +731,13 @@ for ir=1:nrec
                         end
                         
                         if para.dim == 4 % 3Dgeneral
-                          if rij==0
-                            ex = true; %gaussex
-                            Gij0 = Gij_3D_r_smallGEN(coordf0,[xr(ir),yr(ir),zr(ir)],1,ksi,kpi,para,Ci,ex);
-                          else
+%                           if rij==0
+%                             ex = true; %gaussex
+%                             Gij0 = Gij_3D_r_smallGEN(coordf0,[xr(ir),yr(ir),zr(ir)],1,ksi,kpi,para,Ci,ex);
+%                           else
                             ex = false;
                             Gij0 = Gij_3D_r_smallGEN(coordf0,[xr(ir),yr(ir),zr(ir)],1,ksi,kpi,para,Ci,ex);
-                          end
+%                           end
                         else %3D axisimétrico
                           if rij==0
                             Gij0 = Gij_3D_r_small(coordf0,xr(ir),yr(ir),zr(ir),1,ksi,kpi,gaussex,Ci);
@@ -776,13 +777,13 @@ for ir=1:nrec
                         end
                         
                         if para.dim == 4 % 3Dgeneral
-                          if rij==0
-                            ex = true; %gaussex
-                            [S_fx,S_fy,S_fz] = S_3D_r_smallGEN(coordf0,[xr(ir),yr(ir),zr(ir)],1,ksi,kpi,para,Ci,ex);
-                          else
+%                           if rij==0
+%                             ex = true; %gaussex
+%                             [S_fx,S_fy,S_fz] = S_3D_r_smallGEN(coordf0,[xr(ir),yr(ir),zr(ir)],1,ksi,kpi,para,Ci,ex);
+%                           else
                             ex = false;
                             [S_fx,S_fy,S_fz] = S_3D_r_smallGEN(coordf0,[xr(ir),yr(ir),zr(ir)],1,ksi,kpi,para,Ci,ex);
-                          end
+%                           end
                         else %3D axisimétrico
                         if rij==0
                             [S_fx,S_fy,S_fz] = S_3D_r_small(coordf0,1,xr(ir),yr(ir),zr(ir),ksi,kpi,fij(ixs,:),gaussex);

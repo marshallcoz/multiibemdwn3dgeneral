@@ -9,6 +9,9 @@ if isfield(bouton,'rafraichiEveryTime')
 else
    refrescar = 2; 
 end
+if refrescar == 1 % no refrescar
+  return
+end
 if refrescar == 3 % refrescar sólo una vez
     if isfield(bouton,'rafraichiEveryTime')
       set(bouton.rafraichiEveryTime,'value',1);
@@ -48,7 +51,7 @@ yranrec = [min(yr) max(yr)];
 if isfield(bouton,'verReceptores')
     verRecepotores = get(bouton.verReceptores,'value');
 else
-    verRecepotores = false;
+    verRecepotores = true;
 end
 if verRecepotores
 if para.dim == 4
@@ -138,44 +141,25 @@ for m=2:para.nmed
   end
 end
 
-if para.dim ==4
-  set(axe_conf_geo,'Projection','perspective','Box','off')
-  grid on
-  light('Position',[2*min(get(axe_conf_geo,'xlim')) ...
-    2*max(get(axe_conf_geo,'ylim')) ...
-    2*max(get(axe_conf_geo,'zlim'))],'Style','infinite'); %ambient
-  axis tight
-  
-  [limx] = xlim; dlimX=limx(2)-limx(1); 
-  [limy] = ylim; dlimY=limy(2)-limy(1); 
-  [limz] = zlim; dlimZ=limz(2)-limz(1);
-  dlimH = min(dlimX,dlimY);
-  if dlimH < 0.3 *dlimZ; dlimH = 0.3 *dlimZ; end
-  xlim([mean(limx)-dlimH*0.5 mean(limx)+dlimH*0.5])
-  ylim([mean(limy)-dlimH*0.5 mean(limy)+dlimH*0.5])
-  
-  
-%   if ~(nargin > 2); zlim([ -1 max(get(axe_conf_geo,'zlim'))]); end
-  set(axe_conf_geo, 'XColor', 'r');set(axe_conf_geo, 'YColor', 'g');set(axe_conf_geo, 'ZColor', 'b')
-else
-  set(axe_conf_geo,'Projection','orthographic','Box','on');
-  grid off
-  xlabel('X');ylabel('Z');zlabel('');
-  set(axe_conf_geo,'dataaspectratio',[1 1 1])
-  axis image
-  set(axe_conf_geo, 'XColor', 'k');set(axe_conf_geo, 'YColor', 'k');set(axe_conf_geo, 'ZColor', 'k')
-end
 %% fuente
 if isfield(bouton,'inc')
 iinc=get(bouton.inc,'value');
-gam = str2double(get(bouton.gam,'string')); 
-gam=gam*pi/180;
-phi = str2double(get(bouton.phi,'string')); 
-phi=phi*pi/180;
 else
-iinc = 1;
-gam = para.gam(iinc)*pi/180;
-phi = para.phi(iinc)*pi/180;
+  if isfield(bouton,'iinc')
+    iinc = bouton.iinc;
+  else
+    iinc = 1;
+  end
+end
+
+if isfield(bouton,'gam')
+  gam = str2double(get(bouton.gam,'string')); 
+  gam=gam*pi/180;
+  phi = str2double(get(bouton.phi,'string')); 
+  phi=phi*pi/180;
+else
+  gam = para.gam(iinc)*pi/180;
+  phi = para.phi(iinc)*pi/180;
 end
 
 %     hcent   = plot(axe_conf_geo,para.xs(iinc),para.zs(iinc),'r.');
@@ -268,6 +252,34 @@ else
   zlabel('')
 end
 
+if para.dim ==4
+  set(axe_conf_geo,'Projection','perspective','Box','off')
+  grid on
+  light('Position',[2*min(get(axe_conf_geo,'xlim')) ...
+    2*max(get(axe_conf_geo,'ylim')) ...
+    2*max(get(axe_conf_geo,'zlim'))],'Style','infinite'); %ambient
+  axis tight
+  
+  [limx] = xlim; dlimX=limx(2)-limx(1); 
+  [limy] = ylim; dlimY=limy(2)-limy(1); 
+  [limz] = zlim; dlimZ=limz(2)-limz(1);
+  dlimH = min(dlimX,dlimY);
+  if dlimH < 0.3 *dlimZ; dlimH = 0.3 *dlimZ; end
+  xlim([min(limx(1),mean(limx)-dlimH*0.5) max(limx(2),mean(limx)+dlimH*0.5)])
+  ylim([min(limy(1),mean(limy)-dlimH*0.5) max(limy(2),mean(limy)+dlimH*0.5)])
+  
+  
+%   if ~(nargin > 2); zlim([ -1 max(get(axe_conf_geo,'zlim'))]); end
+  set(axe_conf_geo, 'XColor', 'r');set(axe_conf_geo, 'YColor', 'g');set(axe_conf_geo, 'ZColor', 'b')
+else
+  set(axe_conf_geo,'Projection','orthographic','Box','on');
+  grid off
+  xlabel('X');ylabel('Z');zlabel('');
+  set(axe_conf_geo,'dataaspectratio',[1 1 1])
+  axis image
+  set(axe_conf_geo, 'XColor', 'k');set(axe_conf_geo, 'YColor', 'k');set(axe_conf_geo, 'ZColor', 'k')
+end
+
 %% background
  Xl = get(axe_conf_geo,'xlim'); Xl(1) = min(xranrec(1),Xl(1)); Xl(2) = max(xranrec(2),Xl(2));
  Yl = get(axe_conf_geo,'ylim'); Yl(1) = min(yranrec(1),Yl(1)); Yl(2) = max(yranrec(2),Yl(2));
@@ -338,7 +350,8 @@ drawnow update
 if isfield(bouton,'axe_estrDWN')
   axe_estrDWN = bouton.axe_estrDWN;
 else
-  figure('Name','Estratificacion');
+  figure(32947202)
+  set(gcf,'Name','Estratificacion','numberTitle','off');
   axe_estrDWN = gca;
 end
 if para.geo(1)==3 && ishandle(axe_estrDWN)

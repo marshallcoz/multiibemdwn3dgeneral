@@ -60,25 +60,6 @@ cr = -cr;
 spectre=fft(cr*dt); %forward
 spectre=spectre(1:nf); % señal en frecuencia
 spectre=spectre.*exp(1i*w*(para.pulso.c));
-% if length(para.Ricker_tp) ~= 2
-% w   = 2*pi*(df*((1:nf)-1));
-% spectre=spectre.*exp(1i*w*(1.5*tp));
-% end
-
-% figure;subplot(2,1,1);plot(real(cr),'r');hold on;plot(imag(cr),'b')
-% subplot(2,1,2);plot(real(spectre),'r');hold on;plot(imag(spectre),'b')
-% elseif para.pulso.tipo==4  % pulso gaussiana
-%   % para.pulso.a  es aprox. el ancho de la campana de Gauss
-%   % sigma está corregido para que el 2(desv. estandard) coincida con .a
-%     sigma   = sqrt(para.pulso.a^2/(8*log(2)));
-%     freq0   = 0;
-%     damp    = 0;
-%     freq1   = 2*pi*(freq0 + df*((1:nf)-1))+damp;
-%     spectre = exp(-2*(pi*freq1/(2*pi)*sigma).^2);
-% % % 
-% %     sigma=sqrt(100*para.tps_anchoG^2/(8*log(2)));
-% %     freq1 = 2*pi*(freq0 + df*((1:nf)-1))+damp;
-% %     spectre=spectre.*(1+3*exp(-2*(pi*freq1/(2*pi)*sigma).^2));
 elseif para.pulso.tipo==4 % plano + tapper gaussiano
   
   % Definición como Mathiw
@@ -138,9 +119,6 @@ elseif para.pulso.tipo==6 % butterworth
   f      = (0:nf/2)*df;
   omega = 2*pi*f;
   spectre = spectre .*  exp(-1i * omega * para.pulso.c);
-%   Ha = abs(H);
-%   Hr = real(H);
-%   Hi = imag(H);  
    figure(42415)
    freqz(b,a)
 elseif para.pulso.tipo==7 % dirac

@@ -20,8 +20,9 @@ B_DWN       = DWN.B_DWN;
 nkr       	= length(kr);
 
 gaussian       = para.gaussian;
+if para.dim == 3
 gaussex     = para.gaussex;
-
+end
 MAT         = para.reg(1).sub;
 DK          = DWN.dkr;
 
@@ -701,7 +702,7 @@ for ir=1:nrec
                         coordf0.vny = coordf.vny(ixs);
                         coordf0.vnz = coordf.vnz(ixs);
                         coordf0.dr  = dr;
-                        if rij==0
+                        if rij==0 && para.dim == 3
                             Gij0 = Gij_3D_r_small(coordf0,xr(ir),yr(ir),zr(ir),1,ksi,kpi,gaussex,Ci);
                         else
                             Gij0 = Gij_3D_r_small(coordf0,xr(ir),yr(ir),zr(ir),1,ksi,kpi,gaussian,Ci);
@@ -732,7 +733,7 @@ for ir=1:nrec
                         
                         coordf0.dr  = dr;
                         
-                        if rij==0
+                        if rij==0 && para.dim == 3
                             [S_fx,S_fy,S_fz] = S_3D_r_small(coordf0,1,xr(ir),yr(ir),zr(ir),ksi,kpi,fij(ixs,:),gaussex);
                         else
                             [S_fx,S_fy,S_fz] = S_3D_r_small(coordf0,1,xr(ir),yr(ir),zr(ir),ksi,kpi,fij(ixs,:),gaussian);

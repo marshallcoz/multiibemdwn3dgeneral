@@ -397,18 +397,24 @@ para.DWNkmax   = 20;%ke
 % bouton.DWNkmax = uicontrol('parent',uigm,'Style','edit','BackgroundColor',c_2,'Units','normalized','position',[0.1 0.55 .1 .15],...
 %     'string',para.DWNkmax,'Callback','para.DWNkmax=str2num(get(bouton.DWNkmax,''string''));cmd_DWN;');
 
-para.DWNnbptkx  = 2000;
+para.DWNxl = 1000;
+info.DWNxl   = uicontrol('parent',uigm,'Style','text','BackgroundColor',c_3  ,'Units','normalized','position',[0.1 0.7 .1 .1],'string','xl');
+bouton.DWNxl = uicontrol('parent',uigm,'Style','edit','BackgroundColor',c_2,'Units','normalized','position',[0.1 0.55 .1 .15],...
+    'string',para.DWNxl,'Callback','para.DWNxl=str2num(get(bouton.DWNxl,''string''));');
+
+para.DWNnbptkx  = 12000;
 info.DWNnbptkx 	= uicontrol('parent',uigm,'Style','text','BackgroundColor',c_3  ,'Units','normalized','position',[0.25 0.7 .1 .1],'string','nbpt kx');
 bouton.DWNnbptkx= uicontrol('parent',uigm,'Style','edit','BackgroundColor',c_2,'Units','normalized','position',[0.25 0.55 .1 .15],...
-    'string',para.DWNnbptkx,'Callback','para.DWNnbptkx=str2num(get(bouton.DWNnbptkx,''string''));cmd_DWN;');
+    'string',para.DWNnbptkx,'Callback','para.DWNnbptkx=str2num(get(bouton.DWNnbptkx,''string''));');
 
 % DX              = pi/para.DWNkmax;
 % xmax            = DX*para.DWNnbptkx/2;
 % DK              = para.DWNkmax/(para.DWNnbptkx*pi);
 % strinfoDWN      = {['DX=',num2str(DX,2),'  Xmax=',num2str(xmax,2)];['DK=',num2str(DK,2)]};
-strinfoDWN = '';
-info.infoDWN 	= uicontrol('parent',uigm,'Style','text','BackgroundColor',c_4  ,'Units','normalized',...
-    'position',[0.1 0.26 .25 .27],'string',strinfoDWN);
+
+% strinfoDWN = '';
+% info.infoDWN 	= uicontrol('parent',uigm,'Style','text','BackgroundColor',c_4  ,'Units','normalized',...
+%     'position',[0.1 0.26 .25 .27],'string',strinfoDWN);
 info.estrDWN  = uipanel('parent',uigm,'title','Estratificación',...
     'HighlightColor',[1 1 1],'BackgroundColor',c_1,...
     'Position',[.351 0 .649 0.99]);

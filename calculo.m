@@ -40,22 +40,23 @@ end
     % para rij == 0
     % (los siguientes esquemas de cubatura no incluyen el centroide)
 %     cmd_setCubatureTriangle6p;
+     para.gaussian = [];
      cmd_setCubatureTriangle7p;
 %     cmd_setCubatureTriangle12p;
-    para.cubatureex = para.cubature;
-    para.gaussian.ngauex = para.gaussian.ngau;
+%     para.cubatureex = para.cubature;
+%     para.gaussian.ngauex = para.gaussian.ngau;
     
     % para rij ~= 0
 %     cmd_setCubatureTriangle4p;
 %      cmd_setCubatureTriangle7p;
 %      cmd_setCubatureTriangle16p;
 %      cmd_setCubatureTriangle24p;
-    gaussex = para.gaussian;
-    para.gaussex = gaussex;
+%     gaussex = para.gaussian;
+%     para.gaussex = gaussex;
     
-    ngau        = 11;
-    gaussian       = Gauss_Legendre(ngau);
-    para.gaussian  = gaussian;
+    gaussian       = Gauss_Legendre(11);
+    gaussex = para.gaussian;
+%     para.gaussian  = gaussian;
   else % P-SV y 3D axi
     ngau        = 21;
     gaussex  	= Gauss_Legendre(ngau);
@@ -84,6 +85,7 @@ end
 para    = normalizacion(para); 
 sal     = para.sortie;
 nf      = para.nf;
+% para.df = 1/para.tmaxinteres;
 para.df = para.fmax/(nf/2);     %paso en frecuencia
 df      = para.df;
 
@@ -316,16 +318,25 @@ if para.espyinv==1
   else
     DWN=[];
   end
+  
+  % parte imaginaria de la frecuencia
   para.tmax = (para.zeropad-1)/(para.fmax/(para.nf/2)*para.zeropad);
-  para.tmaxinteres = min(para.tmaxinteres,para.tmax);
+  para.tmaxinteres = max(para.tmaxinteres,para.tmax);
   para.DWNomei = 1.0* pi/para.tmaxinteres; % puende ser 2.0 en lugar de 1.0
   DWNomei = para.DWNomei;
+  
+  % Paso en k
+  %   máxima distancia horizontal entre fuente y receptores
+%   xl = para.DWNxl;
+%   pil = 2*pi/xl;
+  
   
   if (~isfield(DWN,'U0') && para.geo(1)~=3)
     DWNomei = 0;
   else
     if para.siDesktop
       waitbarSwitch(0,h,['omega_i = ' num2str(DWNomei)]);
+      waitbarSwitch(0,h,['tmax de interes = ' num2str(para.tmaxinteres)]);
     end
   end
   
@@ -346,41 +357,42 @@ if para.espyinv==1
   % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %
   %                                                                                          %
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  if para.siDesktop
-    waitbarSwitch(0,h,'Calculo de los espectros');
-  else
-    disp('Calculo de los espectros');
-  end
+  
   geo     =para.geo(1);
   nmed    =para.nmed;
   pol     =para.pol;
   dim     =para.dim;
-%   for j=0:nf/2%
- parfor (j=0:nf/2,10)
+  
+  para.usingparfor = true;
+  if para.siDesktop
+    if para.usingparfor
+    waitbarSwitch(0,h,'Calculo de los espectros en paralelo ...');
+    else
+    waitbarSwitch(0,h,'Calculo de los espectros');
+    end
+  end
+%   for j=0:nf/2
+ parfor (j=0:nf/2,12)
     coord = j;    phi_fv = j;    DWNtmp = j;
-      str = sprintf('[ %d / %d]',round(j),round(nf/2));
-%       lPrompt = 10; 
-%       if j==0
-        disp(str);
-%       else
-%         [char(8)*ones(1,lStr+lPrompt),str]
-%       end
-%       lStr = length(str);
-    
     fj          = j*df + 0.01*df*(j==0) - 1i*DWNomei/2/pi; 
-    
+
     %</ inicio de paratmp
     paratmp     = attenuation(para,fj);
     paratmp.j   = j;
     paratmp.fj  = fj;
     
+    if ~paratmp.usingparfor
+      str = sprintf('[ %d / %d]',round(j),round(nf/2));
+      disp(str);
+    end
      % kmax a cada frecuencia
     if geo == 3
     minbeta = 100000000000000000000000;
     for im = 1:paratmp.nsubmed
     minbeta = min(minbeta,paratmp.reg(1).sub(im).bet);
     end
-    paratmp.DWNkmax = 0.9*(2*pi*max(0.3*paratmp.fmax,real(fj)))/minbeta * 1.5;
+%     paratmp.DWNkmax = 0.9*(2*pi*max(0.3*paratmp.fmax,real(fj)))/minbeta * 1.5;
+    paratmp.DWNkmax = 0.9*(2*pi*max(0.15*paratmp.fmax,real(fj)))/minbeta * 1.5;
     end
     
     if nmed==1 && geo==1 
@@ -434,7 +446,11 @@ if para.espyinv==1
         [uw(j+1,:,:,:),sw(j+1,:,:,:)]	= inversion_PSV_k(paratmp,coord,phi_fv,gaussian,DWNtmp); %u(1)=ux, u(2)=uz
       else
         %hay una ecuacion para cada uno de phix, phiy y phiz
+        if para.dim == 3
         [uw(j+1,:,:,:),sw(j+1,:,:,:)] 	= inversion_3D_k(paratmp,coord,phi_fv,gaussex,DWNtmp); %u(1)=ux,u(2)=uy,u(3)=uz
+        else
+        [uw(j+1,:,:,:),sw(j+1,:,:,:)] 	= inversion_3D_k(paratmp,coord,phi_fv,gaussex,DWNtmp); %u(1)=ux,u(2)=uy,u(3)=uz
+        end
       end
     end
     

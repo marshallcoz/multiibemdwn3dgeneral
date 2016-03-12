@@ -8,15 +8,14 @@ U = 0; UKW0    = 0; S = 0;
 %1)selon une valeur de l'interface, un kx max pour toutes les fq, OK pour
 %les graph kw
 DK          = 2*para.DWNkmax/nk0;
-
-
-
-if para.DWNnbptkx/2+1>para.nkmaxKW
-    %2) un kx max = w/beta min, ok pour SH et slmt partie imaginaire
-    DK          = 2*para.reg(1).sub(para.nsubmed).ksi/nk0;
-    %3) un kx max = w/beta min*fac, ok pour PSV et slmt partie imaginaire
-    DK          = 2*1.3*real(para.reg(1).sub(1).ksi)/nk0;
-end
+  
+% 
+% if para.DWNnbptkx/2+1>para.nkmaxKW
+%     %2) un kx max = w/beta min, ok pour SH et slmt partie imaginaire
+%     DK          = 2*para.reg(1).sub(para.nsubmed).ksi/nk0;
+%     %3) un kx max = w/beta min*fac, ok pour PSV et slmt partie imaginaire
+%     DK          = 2*1.3*real(para.reg(1).sub(1).ksi)/nk0;
+% end
 
 %xmax doit etre > vmax*tmax=alpha/dfe
 k2          = (0:(fix(nk0/2)))*DK;
@@ -137,7 +136,18 @@ if para.dim ==1
 elseif para.dim>=3
     
     rec     = para.rec;
-    kr   	= (0.5+(0:nk))*DK/2;
+    
+    xl = para.DWNxl;
+    DK = 2*pi/xl;
+    nk = fix(para.DWNkmax/DK)+1;
+    nk = max(500,nk);
+    
+    if ~para.usingparfor
+      disp([char(8) 'nk= ' num2str(nk)])
+    end
+    
+%     kr   	= (0.5+(0:nk))*DK/2;
+    kr   	= (0.5+(0:nk))*DK;
     DWN.kr	= kr;
     DWN.k2 	= kr;%copia para rebuildk2, sino inutil
     DWN.dkr	= kr*0+DK;

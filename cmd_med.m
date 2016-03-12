@@ -129,11 +129,11 @@ if med==1
     
     set(info.DWN,'visible','off');
     set(bouton.nsubmed,'visible','off');
-%     set(info.DWNkmax,'visible','off');
-%     set(bouton.DWNkmax,'visible','off');
+    set(info.DWNxl,'visible','off');
+    set(bouton.DWNxl,'visible','off');
     set(info.DWNnbptkx,'visible','off');
     set(bouton.DWNnbptkx,'visible','off');
-    set(info.infoDWN,'visible','off');
+%     set(info.infoDWN,'visible','off');
     set(info.estrDWN,'visible','off');
     set(info.submed,'visible','off');
     set(bouton.submed,'visible','off');
@@ -155,11 +155,11 @@ if med==1
         onoff='off';
         set(info.DWN,'visible','on');
         set(bouton.nsubmed,'visible','on');
-%         set(info.DWNkmax,'visible','on');
-%         set(bouton.DWNkmax,'visible','on');
+        set(info.DWNxl,'visible','on');
+        set(bouton.DWNxl,'visible','on');
         set(info.DWNnbptkx,'visible','on');
         set(bouton.DWNnbptkx,'visible','on');
-        set(info.infoDWN,'visible','on');
+%         set(info.infoDWN,'visible','on');
         set(info.estrDWN,'visible','on');
         set(info.submed,'visible','on');
         set(bouton.submed,'visible','on');
@@ -297,11 +297,11 @@ else
     
     set(info.DWN,'visible','off');
     set(bouton.nsubmed,'visible','off');
-%     set(info.DWNkmax,'visible','off');
-%     set(bouton.DWNkmax,'visible','off');
+    set(info.DWNxl,'visible','off');
+    set(bouton.DWNxl,'visible','off');
     set(info.DWNnbptkx,'visible','off');
     set(bouton.DWNnbptkx,'visible','off');
-    set(info.infoDWN,'visible','off');
+%     set(info.infoDWN,'visible','off');
     set(info.estrDWN,'visible','off');
     set(info.submed,'visible','off');
     set(bouton.submed,'visible','off');

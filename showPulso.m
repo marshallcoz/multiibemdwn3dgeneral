@@ -8,10 +8,6 @@ nf      = para.nf;           disp(['nf = ',num2str(nf)])
 nfN     = nf/2+1; 
 df      = para.fmax/nfN;     disp(['df = ',num2str(df)])
 Fq      = (0:nf/2)*df;       disp(['Fmx= ',num2str(Fq(end))])
-% Tq      = 1./Fq;
-% zeropad = para.zeropad;
-% tps     = 0:(1/(df*2*(nfN+zeropad))*(2*(nfN+zeropad)/(2*(nfN+zeropad)-2))):1/df;
-% tps     = linspace(0,1/df,para.zeropad);
 dt = 1/(df*para.zeropad);    disp(['dt = ',num2str(dt)])
 tps = (0:para.zeropad-1)*dt; disp(['tmx= ',num2str(tps(end))])
 

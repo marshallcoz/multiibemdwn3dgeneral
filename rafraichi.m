@@ -108,7 +108,7 @@ set(bouton.nf       ,'string'   ,para.nf);
 set(bouton.DWNnbptkx,'string',para.DWNnbptkx);
 % set(bouton.DWNomei  ,'string',para.DWNomei);
 set(bouton.tmax,'string',para.tmaxinteres);
-cmd_DWN;
+% cmd_DWN;
 clearfield;
 
 dibujo_conf_geo(para,bouton.axe_conf_geo);

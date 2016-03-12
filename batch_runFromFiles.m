@@ -17,17 +17,19 @@ thisDir = pwd; disp(['at: ' thisDir])
 load('../out/init_Gij3Dlayers.mat')
 para.nf  =2048;
 para.fmax = 8;
+para.DWNxl = 1000; % espacio entre fuentes virtuales ( L )
 
 % ajustar variables dependientes del sistema
       [pathstr1,pathstr2,~] = fileparts(pwd);
       [~,name,ext] = fileparts(para.name);
       para.name = [pathstr1,pathstr1(1),pathstr2,pathstr1(1),name,ext];
+      clear ext
       para.nametmp = para.name;
       para.nomcarpeta = pwd;
       para.nomrep = [pathstr1,pathstr1(1),'out'];
 
 disp('1) Inicializar variables ... done')
-%% Usar modelo de velocidades del archivo
+% Usar modelo de velocidades del archivo
 indat = importdata('../ins/vmodelV2.dat');
 para.nsubmed = size(indat.data,1); % cantidad de estratos + semiespacio
 % cargar valores 
@@ -45,7 +47,7 @@ end
 para.reg(1).sub(i).h        = 0; %ultimo estrato=semi espacio
 
 disp('2) Usar modelo de velocidades del archivo ...done')
-%% Usar receptores indicados en archivo
+% Usar receptores indicados en archivo
 indat = importdata('../ins/fault.dat');
 nFault = size(indat,1); %130
 para.recpos=3; %receptores en posicion libre
@@ -79,6 +81,14 @@ para.phi(2*n+1:3*n) = 0;
 
 clear indat i
 disp('4) Usar fuentes indicadas en archivo ...done')
+
+% dibujar configuracion geometrica
+
+bouton = [];
+bouton.iinc = 2;
+figure(1001)
+set(gcf,'Name','Configuracion geométrica','numberTitle','off');
+dibujo_conf_geo(para,gca)
 %% Ejecución del análisis
 para.espyinv=1;
 [RESULT,para]=calculo(para);

@@ -1,8 +1,11 @@
 function [u,t,S]=campo_ref_FP3D(xf,yf,zf,coord,kp,ks,C,fij,salu,salt,para)
 
 n       = coord.nbpt;
+if para.dim == 3
 gaussian   = para.gaussex;
-
+else
+gaussian   = para.gaussian;
+end
 u       = zeros(3,n);
 t       = zeros(3,n);
 Gij     = zeros(3,3,n);

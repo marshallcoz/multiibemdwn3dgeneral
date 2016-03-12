@@ -25,8 +25,9 @@ jphi    = 1:coord.nbeq;
 Gij     = zeros(3,3,coord.nbeq);
 
 gaussian   = para.gaussian;
+if para.dim == 3
 gaussex = para.gaussex;
-
+end
 
 %indice de los medios en contactos
 im  = find(coord.Xim(i,:)~=0);
